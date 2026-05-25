@@ -1,0 +1,32 @@
+
+ESTADO ACTUAL - Rediseño Midnight Gilded Minimalist (Dark Mode)
+===============================================================
+
+HECHO:
+1. ✅ index.css — Variables CSS dark mode completas (bg #0A0A0A, gold #f59e0b, Geist font, Material Symbols)
+2. ✅ index.html — Google Fonts importadas (Geist + Material Symbols Outlined)
+3. ✅ Header.jsx — Navbar dark: sticky, scrolled state, logo dorado, links gris claro, botón "Ingresar" dorado, carrito con badge
+
+PENDIENTE (en orden):
+4. Footer.jsx — fondo oscuro, texto dorado títulos, links gris
+5. ProductCard.jsx — tarjeta BLANCA (#FFFFFF) sobre fondo oscuro, imagen arriba, selector tallas, botón dorado "Agregar"
+6. Home.jsx — hero dark con overlay oscuro, texto blanco, botones dorado/borde, stats glass cards, beneficios, productos destacados
+7. Catalog.jsx — hero "COLECCIÓN EXCLUSIVA", filtros pills dorados, grid product cards blancas, "Cargar Más"
+8. Login.jsx — fondo negro, card blanca centrada, inputs dark (#18181B), botón dorado, Google outlined
+9. Register.jsx — mismo estilo Login
+10. ProductDetail.jsx — dark mode, imagen grande, info card blanca, reviews
+11. Cart.jsx — dark, cards blancas
+12. Checkout.jsx — dark, form card blanca
+13. Contact.jsx — dark
+14. About.jsx — dark
+15. MyOrders.jsx — dark, cards blancas
+16. OrderDetail.jsx — dark
+17. AdminDashboard.jsx — dark, glass cards stats
+18. AdminProducts.jsx — dark, tabla/cards blancas
+19. AdminOrders.jsx — dark
+20. AdminCategories.jsx — dark
+21. AdminCoupons.jsx — dark
+22. SellerDashboard.jsx — dark
+
+BACKEND: Corriendo en puerto 3002, funcionando con MySQL dedicado (3307) + MongoDB (27017)
+FRONTEND DEV: Últimamente parado (npm run dev en proc_482241ab1cd3), habrá que reiniciarlo
