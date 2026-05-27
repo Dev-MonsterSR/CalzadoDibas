@@ -28,5 +28,9 @@ backend/uploads/*
 *.log
 logs/
 
+# Root uploads (bind mount para Docker, imágenes subidas por usuarios)
+uploads/
+!uploads/.gitkeep
+
 # Docker
 docker-compose.yml.backup

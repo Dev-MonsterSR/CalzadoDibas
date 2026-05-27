@@ -12,6 +12,11 @@ services:
       - mysql_data:/var/lib/mysql
       - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./backend/db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mongo:
     image: mongo:7
@@ -24,6 +29,51 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: mongo2025
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: dibas-backend
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - port=3002
+      - node_env=production
+      - db_host=dibas-mysql
+      - db_port=3306
+      - db_user=root
+      - db_password=dibas_root_2025
+      - db_name=dibas_db
+      - jwt_secret=dibas_jwt_secret_dev_change_in_production_2026
+      - jwt_expires=7d
+      - frontend_url=http://localhost:5173,https://calzado.juanangel.me
+      - culqi_public_key=pk_test_njPMs7nqVsZ80xEl
+      - culqi_secret_key=sk_test_cq2c5rIzWyIboqrG
+      - culqi_rsa_key_id=e5b2c7e2-33b0-4b7c-b512-ea4e3c71b592
+      - MONGO_URI=mongodb://dibas:mongo2025@dibas-mongo:27017/dibas_reviews?authSource=admin
+    volumes:
+      - ./uploads:/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: dibas-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
 
 volumes:
   mysql_data:

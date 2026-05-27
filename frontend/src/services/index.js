@@ -38,7 +38,10 @@ export const reviewService = {
 export const adminService = {
   dashboard: () => api.get('/admin/dashboard'),
   listProducts: () => api.get('/admin/products'),
-  createProduct: (data) => api.post('/admin/products', data),
+  createProduct: (data) =>
+    api.post('/admin/products', data, data instanceof FormData ? {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    } : undefined),
   updateProduct: (id, data) => api.put(`/admin/products/${id}`, data),
   deleteProduct: (id) => api.delete(`/admin/products/${id}`),
   uploadProductImages: (id, formData) =>

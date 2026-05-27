@@ -1,14 +1,24 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const uploadsDir = path.join(__dirname, '../../../uploads');
+const paymentProofsDir = path.join(uploadsDir, 'payment-proofs');
+
+const ensureDir = (dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+};
 
 // Multer storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../../../uploads'));
+    ensureDir(uploadsDir);
+    cb(null, uploadsDir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -38,7 +48,8 @@ export const upload = multer({
 export const uploadPaymentProof = multer({
   storage: multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, path.join(__dirname, '../../../uploads/payment-proofs'));
+      ensureDir(paymentProofsDir);
+      cb(null, paymentProofsDir);
     },
     filename: function (req, file, cb) {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

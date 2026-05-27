@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { sellerService, inventoryService } from '../../services';
+import { inventoryService } from '../../services';
 
 export default function SellerDashboard() {
   const [stats, setStats] = useState({});
@@ -9,12 +9,20 @@ export default function SellerDashboard() {
   const [lowStockItems, setLowStockItems] = useState([]);
 
   useEffect(() => {
-    sellerService.dashboard?.().then(res => setStats(res.data || {})).catch(() => setStats({}));
-    inventoryService.getMyInventory?.().then(res => {
-      const items = res.data?.inventory || [];
+    Promise.allSettled([
+      inventoryService.getMyInventory?.(),
+      inventoryService.pickupOrders?.(),
+    ]).then(([inventoryRes, pickupRes]) => {
+      const items = inventoryRes.status === 'fulfilled' ? (inventoryRes.value.data?.inventory || []) : [];
+      const pickups = pickupRes.status === 'fulfilled' ? (pickupRes.value.data?.orders || []) : [];
+
       setInventory(items);
       setLowStockItems(items.filter(i => i.stock <= i.min_stock));
-    }).catch(() => {});
+      setStats({
+        pending_pickup: pickups.length,
+        completed_today: 0,
+      });
+    }).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <p style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>Cargando...</p>;

@@ -7,7 +7,7 @@ export default function ProductCard({ product }) {
   const { addItem } = useCartStore();
 
   const price = product.price_retail;
-    const image = product.primary_image || product.images?.[0]?.image_url || 'https://placehold.co/600x600/1a1a1a/f59e0b?text=DIBAS';
+    const image = product.primary_image || product.images?.[0]?.image_url || '/logo.png';
 
   const sizes = [36, 37, 38, 39, 40, 41, 42, 43].filter(s => s >= 36 && s <= 44);
 

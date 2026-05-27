@@ -32,7 +32,7 @@ export default function ProductDetail() {
   if (loading) return <p style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>Cargando...</p>;
   if (!product) return <p style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>Producto no encontrado</p>;
 
-  const image = product.primary_image || product.images?.[0]?.image_url || 'https://placehold.co/800x800/1a1a1a/f59e0b?text=DIBAS';
+  const image = product.primary_image || product.images?.[0]?.image_url || '/logo.png';
   const allImages = [image, ...(product.images || []).map(i => i.image_url).filter(u => u !== image)];
   const sizes = [36, 37, 38, 39, 40, 41, 42, 43];
 

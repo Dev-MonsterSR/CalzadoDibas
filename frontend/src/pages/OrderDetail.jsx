@@ -105,19 +105,19 @@ export default function OrderDetail() {
           </div>
 
           {/* Info Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginTop: 24, padding: 20, background: 'var(--bg-dark)', borderRadius: 'var(--radius)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginTop: 24, padding: 20, background: 'var(--bg-dark)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)' }}>
             <div>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Método de pago</p>
-              <p style={{ fontWeight: 600 }}>{paymentLabel}</p>
+              <p style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{paymentLabel}</p>
             </div>
             <div>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Entrega</p>
-              <p style={{ fontWeight: 600 }}>{deliveryLabel}{isPickup ? ` (${locationLabels[order.delivery_location] || order.delivery_location})` : ''}</p>
+              <p style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{deliveryLabel}{isPickup ? ` (${locationLabels[order.delivery_location] || order.delivery_location})` : ''}</p>
             </div>
             {order.tracking_code && order.payment_method === 'culqi' && (
               <div>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>ID de transacción</p>
-                <p style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: 13 }}>{order.tracking_code}</p>
+                <p style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: 13, color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{order.tracking_code}</p>
               </div>
             )}
           </div>

@@ -11,6 +11,7 @@ export default function AdminProducts() {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(EMPTY_PRODUCT);
+  const [imageFiles, setImageFiles] = useState([]);
 
   useEffect(() => {
     Promise.all([
@@ -19,25 +20,39 @@ export default function AdminProducts() {
     ]).finally(() => setLoading(false));
   }, []);
 
-  const openCreate = () => { setEditId(null); setForm(EMPTY_PRODUCT); setShowForm(true); };
+  const openCreate = () => { setEditId(null); setForm(EMPTY_PRODUCT); setImageFiles([]); setShowForm(true); };
   const openEdit = (p) => { setEditId(p.id); setForm({
     name: p.name || '', description: p.description || '', code: p.code || '',
     material: p.material || '', brand: p.brand || 'DIBAS',
     price_retail: p.price_retail || '', price_wholesale: p.price_wholesale || '',
     category_id: p.category_id || '',
-  }); setShowForm(true); };
+  }); setImageFiles([]); setShowForm(true); };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editId) {
         await adminService.updateProduct(editId, form);
+
+        if (imageFiles.length > 0) {
+          const imagesForm = new FormData();
+          Array.from(imageFiles).forEach(file => imagesForm.append('images', file));
+          await adminService.uploadProductImages(editId, imagesForm);
+        }
       } else {
-        await adminService.createProduct(form);
+        if (imageFiles.length > 0) {
+          const createForm = new FormData();
+          Object.entries(form).forEach(([key, value]) => createForm.append(key, value ?? ''));
+          Array.from(imageFiles).forEach(file => createForm.append('images', file));
+          await adminService.createProduct(createForm);
+        } else {
+          await adminService.createProduct(form);
+        }
       }
       const r = await adminService.listProducts();
       setProducts(r.data.products || []);
       setShowForm(false);
+      setImageFiles([]);
     } catch (err) { alert(err.response?.data?.message || 'Error al guardar'); }
   };
 
@@ -112,6 +127,23 @@ export default function AdminProducts() {
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: 'block', fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Descripción</label>
               <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={3} style={{...inputStyle, resize: 'vertical'}} />
+            </div>
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ display: 'block', fontSize: 13, color: 'var(--text-muted)', marginBottom: 6 }}>
+                Imágenes del producto {editId ? '(agregar nuevas)' : '(opcional)'}
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={e => setImageFiles(Array.from(e.target.files || []))}
+                style={{ ...inputStyle, padding: '8px 10px' }}
+              />
+              {imageFiles.length > 0 && (
+                <p style={{ marginTop: 6, fontSize: 12, color: 'var(--text-muted)' }}>
+                  {imageFiles.length} imagen(es) seleccionada(s)
+                </p>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
               <button type="submit" style={{ background: 'var(--primary-container)', color: '#000', padding: '10px 24px', borderRadius: 'var(--radius)', fontWeight: 600, border: 'none', cursor: 'pointer' }}>{editId ? 'Guardar Cambios' : 'Crear Producto'}</button>

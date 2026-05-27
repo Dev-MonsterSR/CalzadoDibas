@@ -34,7 +34,7 @@ export default function Cart() {
                 background: 'var(--surface-card)', borderRadius: 'var(--radius-lg)',
                 padding: 20, display: 'flex', gap: 20, color: 'var(--text-on-light)',
               }}>
-                <img src={item.product.primary_image || item.product.images?.[0]?.image_url || 'https://placehold.co/120x120/1a1a1a/f59e0b?text=D'} alt={item.product.name}
+                <img src={item.product.primary_image || item.product.images?.[0]?.image_url || '/logo.png'} alt={item.product.name}
                   style={{ width: 120, height: 120, borderRadius: 'var(--radius)', objectFit: 'cover', flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{item.product.name}</h3>
