@@ -2,17 +2,44 @@ import mongoose from 'mongoose';
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://dibas:mongo2025@localhost:27017/dibas_reviews?authSource=admin';
 
-let isConnected = false;
+// Estado de la conexión
+let connectionPromise = null;
 
+/**
+ * Conecta a MongoDB con retry. Si falla al inicio, reintenta en cada llamada.
+ * Esto soluciona el problema de "buffering timed out" cuando el backend
+ * arranca antes de que la red Docker esté lista (ej. mongo en otra red).
+ */
 export const connectMongo = async () => {
-  if (isConnected) return;
-  try {
-    await mongoose.connect(MONGO_URI);
-    isConnected = true;
+  if (mongoose.connection.readyState === 1) return; // ya conectado
+  if (connectionPromise) return connectionPromise; // conexión en progreso
+
+  connectionPromise = mongoose.connect(MONGO_URI, {
+    serverSelectionTimeoutMS: 5000, // 5s timeout por intento
+  }).then(() => {
     console.log('  ✓ MongoDB connected');
-  } catch (err) {
+    mongoose.connection.on('disconnected', () => {
+      console.warn('  ⚠ MongoDB disconnected, will reconnect on next use');
+      connectionPromise = null;
+    });
+    return true;
+  }).catch((err) => {
     console.error('  ✗ MongoDB error:', err.message);
-  }
+    connectionPromise = null; // permitir reintento
+    throw err;
+  });
+
+  return connectionPromise;
+};
+
+/**
+ * Asegura que mongo esté conectado antes de una operación. Si no lo está,
+ * intenta reconectar. Las queries se reintentan automáticamente gracias a
+ * mongoose (mientras la conexión esté established).
+ */
+export const ensureMongo = async () => {
+  if (mongoose.connection.readyState === 1) return;
+  await connectMongo();
 };
 
 // --- Review Schema (MongoDB) ---

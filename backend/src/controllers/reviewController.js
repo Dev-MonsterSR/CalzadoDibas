@@ -1,8 +1,10 @@
 import { Review } from '../config/mongo.js';
+import { ensureMongo } from '../config/mongo.js';
 import pool from '../config/db.js';
 
 export async function createReview(req, res, next) {
   try {
+    await ensureMongo();
     const { product_id, rating, comment, photos } = req.body;
 
     if (!product_id || !rating) {
@@ -55,6 +57,7 @@ export async function createReview(req, res, next) {
 
 export async function getProductReviews(req, res, next) {
   try {
+    await ensureMongo();
     const reviews = await Review.find({
       product_id: parseInt(req.params.productId),
       status: 'approved'
@@ -67,6 +70,7 @@ export async function getProductReviews(req, res, next) {
 
 export async function getUserReviews(req, res, next) {
   try {
+    await ensureMongo();
     const reviews = await Review.find({
       user_id: req.user.id
     }).sort({ created_at: -1 });
@@ -78,6 +82,7 @@ export async function getUserReviews(req, res, next) {
 
 export async function moderateReview(req, res, next) {
   try {
+    await ensureMongo();
     const { status } = req.body;
     if (!['approved', 'rejected', 'pending'].includes(status)) {
       return res.status(400).json({ message: 'Estado inválido' });
@@ -98,6 +103,7 @@ export async function moderateReview(req, res, next) {
 
 export async function markHelpful(req, res, next) {
   try {
+    await ensureMongo();
     const review = await Review.findByIdAndUpdate(
       req.params.reviewId,
       { $inc: { helpful_count: 1 } },
