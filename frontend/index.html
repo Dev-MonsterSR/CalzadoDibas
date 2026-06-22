@@ -12,8 +12,20 @@
     Antes: <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     Problema: ad-blockers del navegador (Brave, uBlock) bloquean cdn.tailwindcss.com con ERR_BLOCKED_BY_CLIENT.
     Solucion: descargar el bundle una vez y servirlo localmente desde el mismo dominio.
+
+    ORDEN CRITICO (commit c3870c6 -> aprende del error):
+    1. Pre-crear window.tailwind para evitar "tailwind is not defined" si el config corre antes
+    2. Suprimir el warning de produccion del bundle de Tailwind v3
+    3. Cargar el bundle de Tailwind (SIN defer, debe estar listo antes del config)
+    4. Aplicar la configuracion (tailwind.config)
+    Si el orden es incorrecto, el config corre antes de que tailwind exista y rompe TODO el JSX que use Tailwind.
     -->
-    <script src="/tailwind-cdn.js" defer></script>
+    <script>
+      // Paso 1+2: preparar el namespace y suprimir warning
+      window.tailwind = window.tailwind || {};
+      window.tailwind.suppressProductionWarning = true;
+    </script>
+    <script src="/tailwind-cdn.js"></script>
     <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
