@@ -102,9 +102,10 @@ export default function Header() {
 
           {/* Mobile menu */}
           <button onClick={() => setMobileOpen(!mobileOpen)} style={{
-            display: 'none', background: 'none', color: 'var(--text-primary)',
+            background: 'none', color: 'var(--text-primary)',
+            padding: 0,
           }} className="mobile-menu-btn">
-            <span className="material-symbols-outlined">{mobileOpen ? 'close' : 'menu'}</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 28 }}>{mobileOpen ? 'close' : 'menu'}</span>
           </button>
         </div>
       </div>

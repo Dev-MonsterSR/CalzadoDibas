@@ -64,7 +64,7 @@ export default function Home() {
         </div>
 
         <div className="container" style={{ position: 'relative', zIndex: 1, width: '100%' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }} className="hero-grid">
+          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }}>
             {/* Left */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               <h1 style={{
@@ -91,7 +91,7 @@ export default function Home() {
             </div>
 
             {/* Right - Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div className="hero-stats" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               {stats.map((s, i) => (
                 <div key={i} style={{
                   ...glassCard,
@@ -116,7 +116,7 @@ export default function Home() {
         borderBottom: '1px solid var(--outline-variant)',
         background: 'var(--bg-secondary)',
       }}>
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32 }}>
+        <div className="container benefits-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32 }}>
           {benefits.map((b, i) => (
             <div key={i} style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -140,7 +140,7 @@ export default function Home() {
       {/* Featured Products */}
       <section style={{ padding: '64px 0' }}>
         <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48, flexWrap: 'wrap', gap: 16 }}>
+          <div className="featured-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48, flexWrap: 'wrap', gap: 16 }}>
             <div>
               <h2 style={{ color: '#fff', fontSize: 32, fontWeight: 700, marginBottom: 8 }}>Productos Destacados</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: 16 }}>La selección de la temporada para ti.</p>

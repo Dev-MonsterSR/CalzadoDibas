@@ -131,6 +131,60 @@ input, select, textarea {
   .container {
     padding: 0 var(--space-md);
   }
+  /* Responsive utilities - ocultar en mobile */
+  .desktop-nav {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+  }
+  /* Hero grid: stackear columnas en mobile */
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+  .hero-stats {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  /* Benefits: 1 columna en mobile */
+  .benefits-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  .benefit-item {
+    border-left: none !important;
+    border-right: none !important;
+    border-top: 1px solid var(--outline-variant);
+    border-bottom: 1px solid var(--outline-variant);
+    padding: 24px 16px !important;
+  }
+  .benefit-item:first-child {
+    border-top: none;
+  }
+  .benefit-item:last-child {
+    border-bottom: none;
+  }
+  /* Featured products header: stackear */
+  .featured-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    margin-bottom: 24px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Ajustes para moviles pequenos */
+  .container {
+    padding: 0 var(--space-sm);
+  }
+  .hero-stats {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* Spinner */
