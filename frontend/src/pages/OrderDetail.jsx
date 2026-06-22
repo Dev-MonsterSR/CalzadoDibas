@@ -154,21 +154,40 @@ export default function OrderDetail() {
           </div>
 
           {/* Acciones: Boleta y QR */}
-          {/* Message when order is paid but not ready yet */}
+          {/* Acciones: Boleta y QR */}
+          {/* Message when order is paid but not yet preparing (recojo_tienda) */}
           {isPickup && order.status === 'pagado' && (
             <div style={{ marginTop: 24, padding: 16, background: 'var(--bg-dark)', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)', textAlign: 'center' }}>
               <span className="material-symbols-outlined" style={{ fontSize: 32, color: 'var(--primary-container)', marginBottom: 8 }}>hourglass_empty</span>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>Tu pedido está siendo preparado</p>
               <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>Te notificaremos cuando esté listo para recojo</p>
+              {/* Código de pedido para referencia */}
+              <div style={{ marginTop: 12, padding: 8, background: 'var(--bg-secondary)', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)' }}>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: 1 }}>Código de pedido</p>
+                <p style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  #{String(order.id).padStart(6, '0')}
+                </p>
+                {order.boleta_number && (
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                    Boleta: <span style={{ fontWeight: 600 }}>{order.boleta_number}</span>
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Message when order is being prepared */}
+          {/* Message when order is being prepared (recojo_tienda) */}
           {isPickup && order.status === 'preparando' && (
             <div style={{ marginTop: 24, padding: 16, background: 'var(--bg-dark)', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)', textAlign: 'center' }}>
               <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#1e40af', marginBottom: 8 }}>inventory_2</span>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>Estamos preparando tu pedido</p>
-              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>El QR de recojo estará disponible pronto</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>El QR de recojo estará disponible en unos minutos</p>
+              <div style={{ marginTop: 12, padding: 8, background: 'var(--bg-secondary)', borderRadius: 'var(--radius)' }}>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: 1 }}>Código de pedido</p>
+                <p style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  #{String(order.id).padStart(6, '0')}
+                </p>
+              </div>
             </div>
           )}
 
@@ -213,17 +232,29 @@ export default function OrderDetail() {
           {/* Acciones: Boleta y QR */}
           {(canShowBoleta || isPickup) && (
             <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--outline-variant)' }}>
-              {isPickup && order.status === 'listo_recojo' && (
+              {isPickup && (order.status === 'preparando' || order.status === 'listo_recojo' || order.status === 'entregado') && (
                 <div style={{ marginBottom: 16 }}>
                   {qrCode ? (
                     <div style={{ background: '#fff', borderRadius: 'var(--radius-lg)', padding: 20, textAlign: 'center' }}>
                       <img src={qrCode} alt="QR de recojo" style={{ width: 220, height: 220, display: 'inline-block' }} />
-                      <p style={{ color: '#18181B', fontSize: 14, marginTop: 12, fontWeight: 600 }}>
-                        Presenta este QR al vendedor para recoger tu pedido
+                      {/* Código de pedido en texto debajo del QR (para dictar al vendedor si la cámara falla) */}
+                      <p style={{ color: '#6b7280', fontSize: 11, marginTop: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        Código de pedido
                       </p>
-                      <p style={{ color: '#6b7280', fontSize: 12, marginTop: 4 }}>
+                      <p style={{ color: '#18181B', fontSize: 22, fontWeight: 700, fontFamily: 'monospace', marginTop: 2, letterSpacing: 2 }}>
+                        #{String(order.id).padStart(6, '0')}
+                      </p>
+                      {order.boleta_number && (
+                        <p style={{ color: '#6b7280', fontSize: 11, marginTop: 4 }}>
+                          Boleta: <span style={{ fontWeight: 600 }}>{order.boleta_number}</span>
+                        </p>
+                      )}
+                      <p style={{ color: '#6b7280', fontSize: 12, marginTop: 8 }}>
                         <span className="material-symbols-outlined" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 2 }}>storefront</span>
                         {locationLabels[order.delivery_location]}
+                      </p>
+                      <p style={{ color: '#6b7280', fontSize: 11, marginTop: 4, fontStyle: 'italic' }}>
+                        Presenta este QR al vendedor. Si la cámara no funciona, dicta el código #{String(order.id).padStart(6, '0')}.
                       </p>
                       <button
                         onClick={fetchQR}

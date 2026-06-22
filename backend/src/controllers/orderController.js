@@ -294,15 +294,26 @@ export async function getOrderQR(req, res, next) {
     if (order.delivery_method !== 'recojo_tienda') {
       return res.status(400).json({ message: 'Esta orden no es para recojo en tienda.' });
     }
-    if (order.status !== 'listo_recojo') {
-      return res.status(400).json({ message: 'El QR solo está disponible cuando el pedido está listo para recojo.' });
+    // QR disponible desde 'preparando' (admin ya empezó a armar el pedido)
+    // hasta 'entregado' (histórico para que el cliente tenga comprobante)
+    if (!['preparando', 'listo_recojo', 'entregado'].includes(order.status)) {
+      return res.status(400).json({
+        message: `El QR se genera cuando el pedido está en preparación. Estado actual: '${order.status}'.`,
+      });
     }
 
     const token = generateQRToken(order.id, order.delivery_location);
     const qrData = JSON.stringify({ token, orderId: order.id, location: order.delivery_location });
     const qrCode = await QRCode.toDataURL(qrData, { width: 300, margin: 2 });
 
-    res.json({ qr_code: qrCode, token, order_id: order.id, location: order.delivery_location });
+    res.json({
+      qr_code: qrCode,
+      token,  // código en texto que el cliente puede dictar al vendedor si la cámara falla
+      code: `#${String(order.id).padStart(6, '0')}`,  // código legible
+      order_id: order.id,
+      location: order.delivery_location,
+      status: order.status,
+    });
   } catch (err) {
     next(err);
   }
