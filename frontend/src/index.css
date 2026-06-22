@@ -158,6 +158,11 @@ input, select, textarea {
   .user-actions-mobile {
     display: flex !important;
   }
+  /* Hero: anadir padding-top en mobile para que no quede pegado al header */
+  .hero-section {
+    padding-top: 24px !important;
+    min-height: auto !important;
+  }
   /* Hero grid: stackear columnas en mobile */
   .hero-grid {
     grid-template-columns: 1fr !important;

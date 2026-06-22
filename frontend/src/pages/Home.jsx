@@ -48,7 +48,7 @@ export default function Home() {
   return (
     <>
       {/* Hero */}
-      <section style={{
+      <section className="hero-section" style={{
         position: 'relative', minHeight: '85vh', display: 'flex', alignItems: 'center',
         overflow: 'hidden',
       }}>
