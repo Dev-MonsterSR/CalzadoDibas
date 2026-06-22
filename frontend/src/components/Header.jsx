@@ -52,37 +52,39 @@ export default function Header() {
 
         {/* Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {user ? (
-            <>
-              <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>Hola, {user.name}</span>
-              <Link to="/orders" style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 500 }}>
-                Mis Pedidos
-              </Link>
-              {(user.role === 'admin' || user.role === 'vendedor_trujillo' || user.role === 'vendedor_lima') && (
-                <Link to={user.role === 'admin' ? '/admin' : '/seller'} style={{
-                  background: 'var(--primary-container)', color: '#000',
-                  padding: '6px 16px', borderRadius: 'var(--radius-full)',
-                  fontSize: 13, fontWeight: 700, letterSpacing: '0.02em',
-                }}>
-                  {user.role === 'admin' ? '🛡 Admin' : '🏪 Vendedor'}
+          <div className="user-actions-desktop" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {user ? (
+              <>
+                <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>Hola, {user.name}</span>
+                <Link to="/orders" style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 500 }}>
+                  Mis Pedidos
                 </Link>
-              )}
-              <button onClick={() => { logout(); navigate('/'); }} style={{
-                fontSize: 14, color: 'var(--text-muted)', background: 'none',
-                border: 'none', cursor: 'pointer', letterSpacing: '0.05em',
-              }}>Salir</button>
-            </>
-          ) : (
-            <Link to="/login" style={{
-              background: 'var(--primary-container)', color: '#000',
-              padding: '8px 20px', borderRadius: 'var(--radius)',
-              fontSize: 14, fontWeight: 600, letterSpacing: '0.03em',
-              transition: 'filter 0.2s',
-            }}
-              onMouseEnter={e => e.target.style.filter = 'brightness(1.1)'}
-              onMouseLeave={e => e.target.style.filter = 'brightness(1)'}
-            >Ingresar</Link>
-          )}
+                {(user.role === 'admin' || user.role === 'vendedor_trujillo' || user.role === 'vendedor_lima') && (
+                  <Link to={user.role === 'admin' ? '/admin' : '/seller'} style={{
+                    background: 'var(--primary-container)', color: '#000',
+                    padding: '6px 16px', borderRadius: 'var(--radius-full)',
+                    fontSize: 13, fontWeight: 700, letterSpacing: '0.02em',
+                  }}>
+                    {user.role === 'admin' ? '🛡 Admin' : '🏪 Vendedor'}
+                  </Link>
+                )}
+                <button onClick={() => { logout(); navigate('/'); }} style={{
+                  fontSize: 14, color: 'var(--text-muted)', background: 'none',
+                  border: 'none', cursor: 'pointer', letterSpacing: '0.05em',
+                }}>Salir</button>
+              </>
+            ) : (
+              <Link to="/login" style={{
+                background: 'var(--primary-container)', color: '#000',
+                padding: '8px 20px', borderRadius: 'var(--radius)',
+                fontSize: 14, fontWeight: 600, letterSpacing: '0.03em',
+                transition: 'filter 0.2s',
+              }}
+                onMouseEnter={e => e.target.style.filter = 'brightness(1.1)'}
+                onMouseLeave={e => e.target.style.filter = 'brightness(1)'}
+              >Ingresar</Link>
+            )}
+          </div>
 
           <Link to="/cart" style={{
             color: 'var(--primary-container)', position: 'relative',
@@ -121,6 +123,35 @@ export default function Header() {
               color: 'var(--text-muted)', fontSize: 16, fontWeight: 500, padding: '8px 0',
             }}>{label}</Link>
           ))}
+          {/* User actions en mobile (oculto en desktop via CSS) */}
+          {user && (
+            <div className="user-actions-mobile" style={{ borderTop: '1px solid var(--outline-variant)', marginTop: 8, paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <span style={{ fontSize: 14, color: 'var(--text-muted)', padding: '4px 0' }}>Hola, {user.name}</span>
+              <Link to="/orders" onClick={() => setMobileOpen(false)} style={{
+                color: 'var(--text-muted)', fontSize: 16, fontWeight: 500, padding: '8px 0',
+              }}>Mis Pedidos</Link>
+              {(user.role === 'admin' || user.role === 'vendedor_trujillo' || user.role === 'vendedor_lima') && (
+                <Link to={user.role === 'admin' ? '/admin' : '/seller'} onClick={() => setMobileOpen(false)} style={{
+                  color: 'var(--primary-container)', fontSize: 16, fontWeight: 600, padding: '8px 0',
+                }}>{user.role === 'admin' ? '🛡 Admin' : '🏪 Vendedor'}</Link>
+              )}
+              <button onClick={() => { setMobileOpen(false); logout(); navigate('/'); }} style={{
+                color: 'var(--text-muted)', fontSize: 16, fontWeight: 500,
+                background: 'none', border: 'none', cursor: 'pointer',
+                textAlign: 'left', padding: '8px 0', letterSpacing: '0.05em',
+              }}>Salir</button>
+            </div>
+          )}
+          {!user && (
+            <div className="user-actions-mobile" style={{ borderTop: '1px solid var(--outline-variant)', marginTop: 8, paddingTop: 12 }}>
+              <Link to="/login" onClick={() => setMobileOpen(false)} style={{
+                background: 'var(--primary-container)', color: '#000',
+                padding: '12px 20px', borderRadius: 'var(--radius)',
+                fontSize: 15, fontWeight: 600, textAlign: 'center',
+                display: 'block', letterSpacing: '0.03em',
+              }}>Ingresar</Link>
+            </div>
+          )}
         </div>
       )}
     </header>

@@ -143,6 +143,13 @@ input, select, textarea {
     height: 40px;
     cursor: pointer;
   }
+  /* User actions: ocultar las del header (van al menu hamburguesa) */
+  .user-actions-desktop {
+    display: none !important;
+  }
+  .user-actions-mobile {
+    display: flex !important;
+  }
   /* Hero grid: stackear columnas en mobile */
   .hero-grid {
     grid-template-columns: 1fr !important;
@@ -150,6 +157,13 @@ input, select, textarea {
   }
   .hero-stats {
     grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+  }
+  .hero-stats > div {
+    padding: 16px 12px !important;
+  }
+  .hero-stats > div > span:nth-child(2) {
+    font-size: 26px !important;
   }
   /* Benefits: 1 columna en mobile */
   .benefits-grid {
