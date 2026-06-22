@@ -134,10 +134,21 @@ export default function OrderDetail() {
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Entrega</p>
               <p style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{deliveryLabel}{isPickup ? ` (${locationLabels[order.delivery_location] || order.delivery_location})` : ''}</p>
             </div>
-            {order.tracking_code && order.payment_method === 'culqi' && (
+            {/* ID de transacción Culqi (referencia del cargo en la tarjeta) */}
+            {order.tracking_code && order.payment_method === 'culqi' && order.delivery_method !== 'envio_agencia' && (
               <div>
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>ID de transacción</p>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>ID de transacción Culqi</p>
                 <p style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: 13, color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{order.tracking_code}</p>
+              </div>
+            )}
+            {/* Tracking de envío a agencia (mostrar siempre que exista) */}
+            {order.tracking_code && order.delivery_method === 'envio_agencia' && (
+              <div style={{ gridColumn: '1 / -1' }}>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Código de seguimiento de envío</p>
+                <p style={{ fontWeight: 700, fontFamily: 'monospace', fontSize: 15, color: 'var(--primary-container)' }}>{order.tracking_code}</p>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                  Usa este código en la web de la agencia de transportes para rastrear tu pedido
+                </p>
               </div>
             )}
           </div>
@@ -158,6 +169,24 @@ export default function OrderDetail() {
               <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#1e40af', marginBottom: 8 }}>inventory_2</span>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>Estamos preparando tu pedido</p>
               <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>El QR de recojo estará disponible pronto</p>
+            </div>
+          )}
+
+          {/* Message when envio_agencia is in pagado (paid but not yet shipped) */}
+          {order.delivery_method === 'envio_agencia' && order.status === 'pagado' && (
+            <div style={{ marginTop: 24, padding: 16, background: 'var(--bg-dark)', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)', textAlign: 'center' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 32, color: 'var(--primary-container)', marginBottom: 8 }}>local_shipping</span>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>Tu pago fue confirmado</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>Pronto te enviaremos el código de seguimiento de la agencia de transportes</p>
+            </div>
+          )}
+
+          {/* Message when envio_agencia is enviado (shipped) */}
+          {order.delivery_method === 'envio_agencia' && order.status === 'enviado' && (
+            <div style={{ marginTop: 24, padding: 16, background: 'var(--bg-dark)', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)', textAlign: 'center' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#3730a3', marginBottom: 8 }}>flight_takeoff</span>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>¡Tu pedido está en camino!</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>La agencia de transportes lo está llevando a tu destino</p>
             </div>
           )}
 
