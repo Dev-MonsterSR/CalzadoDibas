@@ -125,10 +125,78 @@ Test E2E completo (orden #13 creada, pagada, preparada, lista para recojo, entre
 | `GET /api/employees/2/deliveries?date=today` | 200, count:1, orden #13 con detalles |
 | `GET /api/health` | 200, `{"status":"ok"}` |
 
+## 🔧 Deploy rápido (cambios solo de frontend)
+
+El `Dockerfile` ejecuta `npm run build` dentro del contenedor, así que cualquier cambio
+en `frontend/src/` se recoge reconstruyendo **solo el contenedor `dibas-frontend`**.
+
+Si los cambios están **sin commitear**, el rsync normal (por `mtime`) puede no detectarlos.
+Forzar siempre con `touch src/index.css` + `docker-compose build --no-cache frontend`.
+
+```bash
+# 1. Empujar cambios locales (si no se commiteó)
+rsync -avz --progress --exclude='node_modules' --exclude='dist' \
+  ./frontend/ MinecracitoServer:/home/ubuntu/Docker/Dibas/CalzadoDibas/frontend/
+
+# 2. Forzar rebuild (sin caché de layers de Docker)
+ssh MinecracitoServer 'cd /home/ubuntu/Docker/Dibas/CalzadoDibas/frontend && \
+  touch src/index.css && \
+  docker-compose build --no-cache frontend && \
+  cd .. && \
+  docker rm -f dibas-frontend 2>/dev/null; \
+  docker-compose up -d --no-deps frontend'
+
+# 3. Validar (simulando pestaña incógnito, sin caché)
+curl -sS -H "Cache-Control: no-cache" https://calzado.juanangel.me/seller | grep -E "assets/index-.*\.(js|css)"
+```
+
+### Diagnóstico típico: "se ve sin estilos en incognito"
+
+Síntoma: la página carga pero aparece como HTML pelado (texto negro sobre blanco,
+sin colores ni layout).
+
+Causa: el HTML en producción apunta a un hash de JS/CSS (`index-XXXX.js`) que ya no
+existe en el contenedor. Suele pasar cuando se hace `npm run build` local pero NO
+se redespliega el contenedor — en modo normal el navegador usa la versión cacheada
+del HTML viejo, en incognito no hay caché y se ve roto.
+
+Fix: redeploy completo siguiendo los pasos 1-3 de arriba.
+
+## 🐛 Bug histórico: Tailwind se renderizaba básico en producción (jun 22 2026)
+
+**Síntoma**: `calzado.juanangel.me/seller` se veía "básico" (texto plano, sin colores premium,
+sin grid de tallas estilizado) mientras que `localhost:5173/seller` se veía bien.
+
+**Causa raíz**: el commit `0e8ea11` quitó el `<script src="cdn.tailwindcss.com">` del
+`index.html` para producción. Pensaba que Cloudflare lo bloqueaba. La realidad:
+
+- El dev server local (Vite) estaba sirviendo un `index.html` cacheado con el CDN
+- El build de producción usa `index.html` del proyecto (sin CDN) + Tailwind v4 local
+- Tailwind v4 con `@config` del config de v3 NO genera correctamente las clases con
+  modificadores de opacidad (`bg-primary-container/15`, `text-error/30`, etc.) ni las
+  utility classes de los plugins `forms` y `container-queries`
+- El CDN de Tailwind v3 SÍ responde 200 (verificado con `curl` + UA real)
+- Cloudflare **no** lo bloquea (el bloqueo original fue en otro contexto, no permanente)
+
+**Fix (commit `1191294`)**:
+1. Restaurar `<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries">`
+   en `frontend/index.html`
+2. Restaurar `<script id="tailwind-config">` con las 50+ colores custom, borderRadius,
+   spacing, fontFamily, fontSize — config idéntico al que Vite estaba sirviendo en dev
+3. Quitar `@import "tailwindcss"` y `@config` de `src/index.css` (ya no es necesario
+   porque Tailwind se carga por CDN en runtime)
+
+**Resultado**: prod y dev ahora se ven IDÉNTICOS porque ambos cargan el mismo CDN con
+el mismo config.
+
+**Lección**: **NO** migrar de Tailwind CDN (v3) a Tailwind v4 build sin migrar primero
+el config de v3 a formato v4 (`@theme` en CSS). El `@config` en v4 no procesa las
+variantes de opacidad ni los plugins `forms`/`container-queries`.
+
 ## 📝 Deuda Técnica Conocida
 
 1. **CORS pre-Check**: actualmente no se hace preflight desde la app móvil. Si agregas headers custom (ej. `X-App-Version`), necesitarás manejar OPTIONS.
 2. **Push a GitHub**: el commit `9a15395` está en local pero el push falló por falta de token. Configurar PAT o SSH key para subir.
 3. **Imagen URL absoluta**: actualmente devuelve `/uploads/...` (ruta relativa). Para app móvil, considera agregar el dominio completo en una futura versión.
-4. **MongoDB warning en startup**: el backend no puede resolver `dibas-mongo` si no está en la red `dibas-network`. Mismo fix que para mysql.
+4. **MongoDB warning en startup**: el backend puede tardar en resolver `dibas-mongo` si no está en la red `dibas-network`. Mismo fix que para mysql.
 5. **Logo oscuro y Tailwind CDN**: ya se cambió el logo a dorado, falta migrar a build de Tailwind sin CDN.
