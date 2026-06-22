@@ -228,14 +228,14 @@ input, select, textarea {
     padding: 0 var(--space-sm);
   }
   .hero-stats {
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
   }
   .hero-stats > div {
-    padding: 24px 16px !important;
+    padding: 20px 8px !important;
   }
   .hero-stats > div > span:nth-child(2) {
-    font-size: 32px !important;
+    font-size: 24px !important;
   }
   .stats-grid {
     grid-template-columns: 1fr 1fr !important;
