@@ -161,17 +161,29 @@ export default function OrderDetail() {
               <span className="material-symbols-outlined" style={{ fontSize: 32, color: 'var(--primary-container)', marginBottom: 8 }}>hourglass_empty</span>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>Tu pedido está siendo preparado</p>
               <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>Ya puedes generar tu QR de recojo y presentarlo al vendedor cuando vengas a la tienda</p>
-              {/* Código de pedido para referencia */}
-              <div style={{ marginTop: 12, padding: 8, background: 'var(--bg-secondary)', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)' }}>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: 1 }}>Código de pedido</p>
-                <p style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 700, color: 'var(--text-secondary)' }}>
+              {/* Código de pedido - clickable para copiar */}
+              <div
+                onClick={() => {
+                  const code = '#' + String(order.id).padStart(6, '0');
+                  navigator.clipboard?.writeText(code);
+                }}
+                style={{ marginTop: 12, padding: 12, background: 'var(--bg-secondary)', borderRadius: 'var(--radius)', border: '1px solid var(--primary-container)', cursor: 'pointer' }}
+                title="Click para copiar"
+              >
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>
+                  Tu código de recojo (click para copiar)
+                </p>
+                <p style={{ fontFamily: 'monospace', fontSize: 22, fontWeight: 700, color: 'var(--primary-container)', letterSpacing: 2 }}>
                   #{String(order.id).padStart(6, '0')}
                 </p>
                 {order.boleta_number && (
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
                     Boleta: <span style={{ fontWeight: 600 }}>{order.boleta_number}</span>
                   </p>
                 )}
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, fontStyle: 'italic' }}>
+                  Dile este código al vendedor en la tienda si no puedes mostrar el QR
+                </p>
               </div>
             </div>
           )}

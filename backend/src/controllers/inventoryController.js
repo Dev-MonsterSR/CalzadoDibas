@@ -99,18 +99,54 @@ export async function verifyQR(req, res, next) {
     const { token } = req.body;
     if (!token) return res.status(400).json({ message: 'Token QR requerido.' });
 
-    const decoded = verifyQRToken(token);
-    if (!decoded) {
-      return res.status(400).json({ message: 'QR inválido o expirado.', valid: false });
+    // Aceptar dos formatos:
+    // 1. JWT firmado largo (lo que genera /api/orders/:id/qr)
+    // 2. Código corto legible tipo "#000022" (lo que el cliente dicta al vendedor)
+    let orderId = null;
+
+    if (token.startsWith('#')) {
+      // Formato código corto: "#000022" (con numeral)
+      const numericPart = token.replace(/^#/, '').replace(/^0+/, '');
+      orderId = parseInt(numericPart, 10);
+      if (!orderId || isNaN(orderId)) {
+        return res.status(400).json({ message: 'Código inválido. Usa el formato #000022 o escanea el QR.', valid: false });
+      }
+    } else if (/^\d{1,6}$/.test(token)) {
+      // Formato numérico: "000022" o "22" (sin numeral)
+      orderId = parseInt(token.replace(/^0+/, '') || '0', 10);
+      if (!orderId) {
+        return res.status(400).json({ message: 'Código inválido. Usa el formato #000022 o escanea el QR.', valid: false });
+      }
+    } else {
+      // Asumir formato JWT firmado
+      const decoded = verifyQRToken(token);
+      if (!decoded) {
+        return res.status(400).json({ message: 'QR inválido o expirado.', valid: false });
+      }
+      orderId = decoded.orderId;
     }
 
-    const order = await Order.findById(decoded.orderId);
+    const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ message: 'Orden no encontrada.', valid: false });
     }
 
-    if (order.status !== 'listo_recojo') {
-      return res.status(400).json({ message: 'La orden no está lista para recojo.', valid: false });
+    if (order.delivery_method !== 'recojo_tienda') {
+      return res.status(400).json({ message: 'Esta orden no es para recojo en tienda.', valid: false });
+    }
+
+    if (order.status === 'entregado') {
+      return res.status(400).json({ message: 'Esta orden YA fue entregada.', valid: false, already_delivered: true });
+    }
+
+    // ANTES: solo 'listo_recojo' permitía confirmar. AHORA: cualquier estado
+    // desde 'pagado' en adelante (porque el vendedor también ve 'pagado' en su panel)
+    if (!['pagado', 'preparando', 'listo_recojo'].includes(order.status)) {
+      return res.status(400).json({
+        message: `La orden no está lista para entregar. Estado: '${order.status}'.`,
+        valid: false,
+        current_status: order.status,
+      });
     }
 
     const roleWarehouseMap = {
@@ -122,6 +158,20 @@ export async function verifyQR(req, res, next) {
       return res.status(403).json({ message: 'Esta orden no corresponde a tu sede.', valid: false });
     }
 
+    // Si está en 'pagado' o 'preparando', lo marcamos como 'listo_recojo' primero
+    // (transición automática: vendedor confirma que ya está listo)
+    if (order.status !== 'listo_recojo') {
+      await Order.updateStatus(order.id, 'listo_recojo');
+      await Order.recordEvent({
+        order_id: order.id,
+        from_status: order.status,
+        to_status: 'listo_recojo',
+        actor_user_id: req.user.id,
+        actor_role: req.user.role,
+        event_type: 'auto_ready_on_scan',
+      });
+    }
+
     const updated = await Order.markDeliveredWithActor(order.id, req.user.id);
     await Order.recordEvent({
       order_id: order.id,
@@ -129,10 +179,15 @@ export async function verifyQR(req, res, next) {
       to_status: 'entregado',
       actor_user_id: req.user.id,
       actor_role: req.user.role,
-      event_type: 'qr_scanned',
+      event_type: token.startsWith('#') ? 'manual_code_delivery' : 'qr_scanned',
     });
 
-    res.json({ message: 'Entrega confirmada', valid: true, order: updated });
+    res.json({
+      message: 'Entrega confirmada',
+      valid: true,
+      order: updated,
+      delivery_method: token.startsWith('#') ? 'manual_code' : 'qr_scan',
+    });
   } catch (err) {
     next(err);
   }

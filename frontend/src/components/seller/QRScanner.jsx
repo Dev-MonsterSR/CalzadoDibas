@@ -22,13 +22,22 @@ export default function QRScanner({ isOpen, onClose, onScan }) {
     try {
       setError('');
       setScanning(true);
-      
+
+      // Si ya hay un scanner corriendo, no hacer nada (evita "Cannot transition to a new state")
       if (scannerRef.current) {
-        await stopCamera();
+        try {
+          const state = scannerRef.current.getState();
+          if (state === 2) return; // SCANNING - ya está corriendo
+          await stopCamera();
+        } catch (e) {
+          // Si getState() falla, intentar limpiar de todas formas
+          try { scannerRef.current.clear(); } catch {}
+          scannerRef.current = null;
+        }
       }
 
       scannerRef.current = new Html5Qrcode('qr-reader');
-      
+
       await scannerRef.current.start(
         { facingMode: 'environment' },
         {
@@ -74,11 +83,14 @@ export default function QRScanner({ isOpen, onClose, onScan }) {
 
   const handleManualSubmit = (e) => {
     e.preventDefault();
-    if (!manualCode.trim()) {
+    const code = manualCode.trim();
+    if (!code) {
       setError('Ingresa un código válido');
       return;
     }
-    handleScan(manualCode.trim());
+    // Aceptar tanto con # como sin # (más tolerante)
+    const normalized = code.startsWith('#') ? code : (code.startsWith('0') && code.length === 6 ? code : code);
+    handleScan(normalized);
   };
 
   const handleClose = () => {
@@ -163,16 +175,19 @@ export default function QRScanner({ isOpen, onClose, onScan }) {
           <form onSubmit={handleManualSubmit} className="space-y-4">
             <div>
               <label className="block text-on-surface-variant text-sm mb-2">
-                Ingresa el código del QR
+                Ingresa el código del pedido
               </label>
               <input
                 type="text"
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
-                placeholder="Pega el código aquí..."
+                placeholder="#000022 o escanea el QR"
                 className="w-full bg-surface-variant/30 border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface focus:ring-primary focus:border-primary"
                 autoFocus
               />
+              <p className="text-on-surface-variant text-xs mt-2">
+                Pide al cliente su código de pedido (ej. <strong>#000022</strong>) o escanea su QR
+              </p>
             </div>
             {error && (
               <div className="bg-error-container/20 border border-error rounded-lg p-3 text-error text-sm flex items-center gap-2">
@@ -184,7 +199,7 @@ export default function QRScanner({ isOpen, onClose, onScan }) {
               type="submit"
               className="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-label-md hover:brightness-110 active:scale-95 transition-all"
             >
-              Verificar Código
+              Confirmar Entrega
             </button>
           </form>
         )}
