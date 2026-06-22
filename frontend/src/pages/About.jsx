@@ -20,7 +20,7 @@ export default function About() {
 
       <section style={{ padding: '32px 0 64px' }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 48, alignItems: 'center', marginBottom: 64 }}>
+          <div className="about-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 48, alignItems: 'center', marginBottom: 64 }}>
             <div>
               <h2 style={{ color: 'var(--primary-container)', fontSize: 14, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>NUESTRA MISIÓN</h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: 20, fontWeight: 600, lineHeight: 1.5, marginBottom: 16 }}>
@@ -31,7 +31,7 @@ export default function About() {
                 Creemos que el calzado de calidad no debería ser un lujo, sino un derecho.
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               {[{v: '10+', l: 'Años'}, {v: '2', l: 'Tiendas'}, {v: '500+', l: 'Modelos'}, {v: '15K+', l: 'Clientes'}].map((s, i) => (
                 <div key={i} style={{
                   background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-lg)',

@@ -197,6 +197,29 @@ input, select, textarea {
     align-items: flex-start !important;
     margin-bottom: 24px !important;
   }
+  /* ProductDetail: stackear imagen y contenido */
+  .product-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  /* About: stackear texto y cards */
+  .about-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+  }
+  /* Login: card full-width en mobile */
+  .login-card {
+    max-width: 100% !important;
+    margin: 0 16px !important;
+  }
+  .login-container {
+    padding: 24px 16px !important;
+    min-height: auto !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -206,6 +229,17 @@ input, select, textarea {
   }
   .hero-stats {
     grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .hero-stats > div {
+    padding: 24px 16px !important;
+  }
+  .hero-stats > div > span:nth-child(2) {
+    font-size: 32px !important;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
   }
 }
 

@@ -41,11 +41,11 @@ export default function Login() {
   };
 
   return (
-    <section style={{
+    <section className="login-container" style={{
       minHeight: '85vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 48,
     }}>
-      <div style={{ width: '100%', maxWidth: 440 }}>
+      <div className="login-card" style={{ width: '100%', maxWidth: 440 }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <img src="/logo.png" alt="CALZADOS DIBA'S" style={{ height: 80, width: 'auto' }} />

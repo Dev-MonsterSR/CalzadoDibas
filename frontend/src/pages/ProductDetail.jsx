@@ -59,7 +59,7 @@ export default function ProductDetail() {
         </div>
 
         {/* Product */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, marginBottom: 64 }}>
+        <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, marginBottom: 64 }}>
           {/* Image Gallery */}
           <div>
             <div style={{
