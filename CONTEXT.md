@@ -434,7 +434,8 @@ docker exec dibas-mysql mysql -uroot -pdibas_root_2025 dibas_db -e "SELECT id, w
 ### Menores
 9. **Order.findById niega acceso a vendedor** — `orderController.js:168`: solo permite admin/fabrica; un vendedor no puede ver detalle de orden ni siquiera de su sede.
 10. **Tablas OMS faltantes en AdminOrders statusMap** — `AdminOrders.jsx:5-12`: faltan `pendiente_validacion`, `rechazado_pago`, `listo_recojo`.
-11. **`canActorPerform` permite `cliente` cancelar cualquier estado** — `orderStateMachine.js:33`: no valida que el estado origen sea cancelable.
+30. **`tracking_code` solo visible si `payment_method === 'culqi'`** — `OrderDetail.jsx:137` (commit `1d60f3c` lo corrige). El tracking es del ENVÍO, no del pago. Clientes con `envio_agencia` (yape/plin) nunca veían el código de seguimiento de la agencia de transportes.
+31. **QR solo en `listo_recojo`** — `orderController.getOrderQR` requería `status === 'listo_recojo'` (commit `3d671ae` lo cambia). Cliente sin código de referencia hasta que la tienda lo marcara como listo. Ahora: `pagado` muestra el código `#000018` (sin QR por seguridad), `preparando`/`listo_recojo`/`entregado` muestran QR + código en texto.
 12. **mongoose ^9.6.2 en package.json** — versión inexistente (última estable es 8.x). Probable typo que rompa `npm install`.
 13. **`recordEvent` no se centraliza** — `markDeliveredWithActor` solo hace UPDATE; el evento lo registra el controller. Si se llama desde otra parte, no se audita.
 14. **Columna `qr_code` en `orders`** se inserta en schema pero el controller de order usa el patrón de generar on-demand vía `getOrderQR` (`generateQRToken` + `QRCode.toDataURL`). El campo en BD queda NULL permanente.
