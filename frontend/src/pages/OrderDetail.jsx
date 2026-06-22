@@ -160,7 +160,7 @@ export default function OrderDetail() {
             <div style={{ marginTop: 24, padding: 16, background: 'var(--bg-dark)', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)', textAlign: 'center' }}>
               <span className="material-symbols-outlined" style={{ fontSize: 32, color: 'var(--primary-container)', marginBottom: 8 }}>hourglass_empty</span>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>Tu pedido está siendo preparado</p>
-              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>Te notificaremos cuando esté listo para recojo</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>Ya puedes generar tu QR de recojo y presentarlo al vendedor cuando vengas a la tienda</p>
               {/* Código de pedido para referencia */}
               <div style={{ marginTop: 12, padding: 8, background: 'var(--bg-secondary)', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)' }}>
                 <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: 1 }}>Código de pedido</p>
@@ -232,7 +232,7 @@ export default function OrderDetail() {
           {/* Acciones: Boleta y QR */}
           {(canShowBoleta || isPickup) && (
             <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--outline-variant)' }}>
-              {isPickup && (order.status === 'preparando' || order.status === 'listo_recojo' || order.status === 'entregado') && (
+              {isPickup && (order.status === 'pagado' || order.status === 'preparando' || order.status === 'listo_recojo' || order.status === 'entregado') && (
                 <div style={{ marginBottom: 16 }}>
                   {qrCode ? (
                     <div style={{ background: '#fff', borderRadius: 'var(--radius-lg)', padding: 20, textAlign: 'center' }}>

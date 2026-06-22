@@ -294,11 +294,12 @@ export async function getOrderQR(req, res, next) {
     if (order.delivery_method !== 'recojo_tienda') {
       return res.status(400).json({ message: 'Esta orden no es para recojo en tienda.' });
     }
-    // QR disponible desde 'preparando' (admin ya empezó a armar el pedido)
-    // hasta 'entregado' (histórico para que el cliente tenga comprobante)
-    if (!['preparando', 'listo_recojo', 'entregado'].includes(order.status)) {
+    // QR disponible desde 'pagado' en adelante (cliente puede generar QR apenas pague,
+    // antes incluso que la tienda lo marque como preparando). Decisión de UX:
+    // el cliente NO tiene que esperar al admin para tener su comprobante de recojo.
+    if (!['pagado', 'preparando', 'listo_recojo', 'entregado'].includes(order.status)) {
       return res.status(400).json({
-        message: `El QR se genera cuando el pedido está en preparación. Estado actual: '${order.status}'.`,
+        message: `El QR se genera cuando el pedido está pagado. Estado actual: '${order.status}'.`,
       });
     }
 

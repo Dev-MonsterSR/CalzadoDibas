@@ -318,8 +318,15 @@ export const Order = {
               u.name as customer_name, u.email as customer_email, u.phone as customer_phone
        FROM orders o
        JOIN users u ON o.user_id = u.id
-       WHERE o.delivery_location = ? AND o.status = 'listo_recojo'
-       ORDER BY o.ready_for_pickup_at ASC`,
+       WHERE o.delivery_location = ?
+         AND o.status IN ('pagado', 'preparando', 'listo_recojo')
+       ORDER BY
+         CASE o.status
+           WHEN 'listo_recojo' THEN 1
+           WHEN 'preparando' THEN 2
+           WHEN 'pagado' THEN 3
+         END,
+         o.created_at ASC`,
       [location]
     );
     for (const order of rows) {
