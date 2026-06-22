@@ -304,7 +304,12 @@ export async function getOrderQR(req, res, next) {
     }
 
     const token = generateQRToken(order.id, order.delivery_location);
-    const qrData = JSON.stringify({ token, orderId: order.id, location: order.delivery_location });
+    // El QR contiene SOLO el token JWT, NO un JSON. Esto es porque
+    // el html5-qrcode lo decodifica tal cual y lo envía al backend,
+    // que espera un token puro (no un objeto JSON).
+    // Si en el futuro se quiere incluir mas info, usar prefijo tipo
+    // "dibas:eyJhbG..." o hacer que verifyQR parsee el JSON.
+    const qrData = token;
     const qrCode = await QRCode.toDataURL(qrData, { width: 300, margin: 2 });
 
     res.json({

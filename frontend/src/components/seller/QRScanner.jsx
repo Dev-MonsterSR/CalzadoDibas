@@ -10,10 +10,20 @@ export default function QRScanner({ isOpen, onClose, onScan }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
+    let mounted = true;
     if (isOpen && mode === 'camera') {
-      startCamera();
+      // Pequeño delay para evitar race condition con cleanup
+      const timer = setTimeout(() => {
+        if (mounted) startCamera();
+      }, 100);
+      return () => {
+        mounted = false;
+        clearTimeout(timer);
+        stopCamera();
+      };
     }
     return () => {
+      mounted = false;
       stopCamera();
     };
   }, [isOpen, mode]);
@@ -23,17 +33,29 @@ export default function QRScanner({ isOpen, onClose, onScan }) {
       setError('');
       setScanning(true);
 
-      // Si ya hay un scanner corriendo, no hacer nada (evita "Cannot transition to a new state")
+      // Si ya hay un scanner creado, destruirlo completamente
       if (scannerRef.current) {
         try {
           const state = scannerRef.current.getState();
-          if (state === 2) return; // SCANNING - ya está corriendo
-          await stopCamera();
-        } catch (e) {
-          // Si getState() falla, intentar limpiar de todas formas
+          if (state === 2) {
+            // SCANNING - parar primero
+            try { await scannerRef.current.stop(); } catch {}
+          }
           try { scannerRef.current.clear(); } catch {}
-          scannerRef.current = null;
+        } catch (e) {
+          // Si getState() falla, ignorar y continuar
         }
+        scannerRef.current = null;
+        // Pequeño delay para asegurar limpieza completa
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+
+      // Verificar que el elemento DOM existe
+      const element = document.getElementById('qr-reader');
+      if (!element) {
+        setError('Error: contenedor del scanner no encontrado.');
+        setScanning(false);
+        return;
       }
 
       scannerRef.current = new Html5Qrcode('qr-reader');
@@ -67,10 +89,10 @@ export default function QRScanner({ isOpen, onClose, onScan }) {
           await scannerRef.current.stop();
         }
         scannerRef.current.clear();
-        scannerRef.current = null;
       } catch (err) {
         console.error('Stop camera error:', err);
       }
+      scannerRef.current = null;
     }
     setScanning(false);
   };

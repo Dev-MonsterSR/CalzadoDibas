@@ -117,6 +117,24 @@ export async function verifyQR(req, res, next) {
       if (!orderId) {
         return res.status(400).json({ message: 'Código inválido. Usa el formato #000022 o escanea el QR.', valid: false });
       }
+    } else if (token.startsWith('{') || token.startsWith('[')) {
+      // Retrocompatibilidad: QRs viejos que tenían JSON.stringify({token, orderId, location})
+      try {
+        const parsed = JSON.parse(token);
+        if (parsed.token) {
+          const decoded = verifyQRToken(parsed.token);
+          if (!decoded) {
+            return res.status(400).json({ message: 'QR inválido o expirado.', valid: false });
+          }
+          orderId = decoded.orderId;
+        } else if (parsed.orderId) {
+          orderId = parsed.orderId;
+        } else {
+          return res.status(400).json({ message: 'QR inválido. Usa el formato #000022 o escanea el QR.', valid: false });
+        }
+      } catch (e) {
+        return res.status(400).json({ message: 'QR inválido. Usa el formato #000022 o escanea el QR.', valid: false });
+      }
     } else {
       // Asumir formato JWT firmado
       const decoded = verifyQRToken(token);

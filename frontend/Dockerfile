@@ -1,10 +1,13 @@
 # ---- Stage 1: Build ----
+# Forzar plataforma ARM64 porque el host es aarch64 (Oracle Cloud).
+# Sin esto, esbuild intenta ejecutar binarios x64 y falla con ETXTBSY.
+ARG TARGETPLATFORM=linux/arm64
 FROM node:20-alpine AS build
 
 WORKDIR /app
 
-COPY package.json ./
-RUN npm install
+COPY package.json package-lock.json* ./
+RUN npm install --include=optional
 
 COPY . .
 RUN npm run build
