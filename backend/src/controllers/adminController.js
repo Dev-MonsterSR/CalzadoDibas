@@ -2,6 +2,7 @@ import pool from '../config/db.js';
 import { Product } from '../models/Product.js';
 import { Category } from '../models/Category.js';
 import { Order } from '../models/Order.js';
+import { canTransition, canActorPerform } from '../domain/orderStateMachine.js';
 
 export async function getDashboard(req, res, next) {
   try {
@@ -91,22 +92,39 @@ export async function getAllOrders(req, res, next) {
 export async function updateOrderStatus(req, res, next) {
   try {
     const { status, tracking_code } = req.body;
-    const validStatuses = ['pendiente', 'pagado', 'preparando', 'enviado', 'entregado', 'cancelado'];
+    const validStatuses = ['pendiente', 'pendiente_validacion', 'pagado', 'preparando', 'enviado', 'listo_recojo', 'entregado', 'cancelado', 'rechazado_pago'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Estado de orden inválido.' });
     }
 
-    let order = await Order.updateStatus(req.params.id, status);
-    if (!order) {
+    const current = await Order.findById(req.params.id);
+    if (!current) {
       return res.status(404).json({ message: 'Orden no encontrada.' });
     }
 
-    // Update tracking code if provided
+    if (!canTransition(current.status, status)) {
+      return res.status(400).json({ message: `Transición inválida: ${current.status} → ${status}` });
+    }
+
+    if (!canActorPerform(req.user.role, status)) {
+      return res.status(403).json({ message: 'No tienes permiso para cambiar a este estado.' });
+    }
+
+    let order = await Order.updateStatus(req.params.id, status);
+
+    await Order.recordEvent({
+      order_id: req.params.id,
+      from_status: current.status,
+      to_status: status,
+      actor_user_id: req.user.id,
+      actor_role: req.user.role,
+      event_type: 'status_change',
+    });
+
     if (tracking_code) {
       order = await Order.updateTrackingCode(req.params.id, tracking_code);
     }
 
-    // If cancelled, restore stock
     if (status === 'cancelado') {
       const [items] = await pool.execute(
         'SELECT product_id, quantity, warehouse FROM order_items WHERE order_id = ?',
@@ -121,6 +139,123 @@ export async function updateOrderStatus(req, res, next) {
     }
 
     res.json({ message: 'Estado de orden actualizado', order });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function approvePayment(req, res, next) {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Orden no encontrada.' });
+    if (order.status !== 'pendiente_validacion') {
+      return res.status(400).json({ message: 'La orden no está pendiente de validación.' });
+    }
+
+    const updated = await Order.approvePayment(req.params.id, req.user.id);
+
+    // Generar boleta al confirmar pago (Yape/Plin)
+    if (!updated.boleta_number) {
+      const boleta = await Order.setBoletaNumber(req.params.id);
+      await pool.execute(
+        'UPDATE orders SET boleta_number = ? WHERE id = ?',
+        [boleta, req.params.id]
+      );
+      updated.boleta_number = boleta;
+    }
+
+    await Order.recordEvent({
+      order_id: req.params.id,
+      from_status: 'pendiente_validacion',
+      to_status: 'pagado',
+      actor_user_id: req.user.id,
+      actor_role: req.user.role,
+      event_type: 'voucher_approved',
+    });
+
+    res.json({ message: 'Pago aprobado', order: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function rejectPayment(req, res, next) {
+  try {
+    const { reason } = req.body;
+    if (!reason) return res.status(400).json({ message: 'El motivo de rechazo es requerido.' });
+
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Orden no encontrada.' });
+    if (order.status !== 'pendiente_validacion') {
+      return res.status(400).json({ message: 'La orden no está pendiente de validación.' });
+    }
+
+    const updated = await Order.rejectPayment(req.params.id, req.user.id, reason);
+    await Order.recordEvent({
+      order_id: req.params.id,
+      from_status: 'pendiente_validacion',
+      to_status: 'rechazado_pago',
+      actor_user_id: req.user.id,
+      actor_role: req.user.role,
+      event_type: 'voucher_rejected',
+      payload: { reason },
+    });
+
+    res.json({ message: 'Pago rechazado', order: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function shipOrder(req, res, next) {
+  try {
+    const { tracking_code, agency } = req.body;
+    if (!tracking_code) return res.status(400).json({ message: 'Código de tracking requerido.' });
+
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Orden no encontrada.' });
+    if (order.status !== 'preparando') {
+      return res.status(400).json({ message: 'La orden debe estar en estado "preparando".' });
+    }
+
+    await Order.updateTrackingCode(req.params.id, tracking_code);
+    const updated = await Order.updateStatus(req.params.id, 'enviado');
+
+    await Order.recordEvent({
+      order_id: req.params.id,
+      from_status: 'preparando',
+      to_status: 'enviado',
+      actor_user_id: req.user.id,
+      actor_role: req.user.role,
+      event_type: 'tracking_added',
+      payload: { tracking_code, agency },
+    });
+
+    res.json({ message: 'Orden enviada', order: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function readyPickup(req, res, next) {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Orden no encontrada.' });
+    if (order.status !== 'preparando') {
+      return res.status(400).json({ message: 'La orden debe estar en estado "preparando".' });
+    }
+
+    const updated = await Order.setReadyForPickup(req.params.id);
+    await Order.recordEvent({
+      order_id: req.params.id,
+      from_status: 'preparando',
+      to_status: 'listo_recojo',
+      actor_user_id: req.user.id,
+      actor_role: req.user.role,
+      event_type: 'ready_for_pickup',
+    });
+
+    res.json({ message: 'Orden lista para recojo', order: updated });
   } catch (err) {
     next(err);
   }

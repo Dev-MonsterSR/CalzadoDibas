@@ -17,7 +17,14 @@ export default function Login() {
     try {
       const res = await authService.login(form);
       login(res.data.token, res.data.user);
-      navigate('/');
+      const role = res.data.user?.role;
+      if (role === 'admin' || role === 'fabrica') {
+        navigate('/admin');
+      } else if (role === 'vendedor_trujillo' || role === 'vendedor_lima') {
+        navigate('/seller');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Error al iniciar sesión');
     } finally {

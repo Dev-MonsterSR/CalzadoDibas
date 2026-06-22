@@ -44,8 +44,24 @@ router.get('/orders', adminController.getAllOrders);
 
 // PUT /api/admin/orders/:id/status - update order status
 router.put('/orders/:id/status', [
-  body('status').isIn(['pendiente', 'pagado', 'preparando', 'enviado', 'entregado', 'cancelado']).withMessage('Estado inválido')
+  body('status').isIn(['pendiente', 'pendiente_validacion', 'pagado', 'preparando', 'enviado', 'listo_recojo', 'entregado', 'cancelado', 'rechazado_pago']).withMessage('Estado inválido')
 ], adminController.updateOrderStatus);
+
+// POST /api/admin/orders/:id/payment/approve
+router.post('/orders/:id/payment/approve', adminController.approvePayment);
+
+// POST /api/admin/orders/:id/payment/reject
+router.post('/orders/:id/payment/reject', [
+  body('reason').trim().notEmpty().withMessage('Motivo de rechazo requerido')
+], adminController.rejectPayment);
+
+// POST /api/admin/orders/:id/ship
+router.post('/orders/:id/ship', [
+  body('tracking_code').trim().notEmpty().withMessage('Código de tracking requerido')
+], adminController.shipOrder);
+
+// POST /api/admin/orders/:id/ready-pickup
+router.post('/orders/:id/ready-pickup', adminController.readyPickup);
 
 // --- Category CRUD ---
 // GET /api/admin/categories

@@ -148,6 +148,25 @@ async function main() {
       );
     }
 
+    // Insert inventory_sizes (distribución por tallas 36-43 centrada en 39)
+    console.log('📏 Inserting inventory sizes...');
+    await connection.execute('DELETE FROM inventory_sizes');
+    // Distribución de probabilidad: 36:1, 37:3, 38:6, 39:8, 40:8, 41:6, 42:3, 43:1 (suma 36)
+    const sizeDist = [
+      [36, 1], [37, 3], [38, 6], [39, 8],
+      [40, 8], [41, 6], [42, 3], [43, 1],
+    ];
+    const [allInventory] = await connection.execute('SELECT id, stock FROM inventory');
+    for (const inv of allInventory) {
+      for (const [size, weight] of sizeDist) {
+        const stockPerSize = Math.round(inv.stock * weight / 36);
+        await connection.execute(
+          'INSERT INTO inventory_sizes (inventory_id, size, stock) VALUES (?, ?, ?)',
+          [inv.id, size, stockPerSize]
+        );
+      }
+    }
+
     // Insert coupons
     console.log('🎟️  Inserting coupons...');
     await connection.execute('DELETE FROM coupons');
@@ -174,6 +193,7 @@ async function main() {
     console.log(`📂 Categories: 4`);
     console.log(`🎟️  Coupons: 3`);
     console.log(`📦 Inventory records: ${inventory.length}`);
+    console.log(`📏 Inventory sizes: ${inventory.length * 8}`);
 
   } catch (err) {
     console.error('❌ Seed error:', err.message);

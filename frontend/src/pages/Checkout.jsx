@@ -25,7 +25,13 @@ export default function Checkout() {
     setStep('processing');
 
     try {
-      const orderItems = items.map(i => ({ product_id: i.product.id, quantity: i.quantity }));
+      // Construir orderItems con size y warehouse desde el cart store
+      const orderItems = items.map(i => ({
+        product_id: i.product.id,
+        quantity: i.quantity,
+        size: i.size,
+        warehouse: i.warehouse
+      }));
 
       // 1. Create order
       const { data } = await orderService.create({ items: orderItems, ...form });

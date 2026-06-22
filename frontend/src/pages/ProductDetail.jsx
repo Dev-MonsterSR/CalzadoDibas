@@ -9,6 +9,7 @@ export default function ProductDetail() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedWarehouse, setSelectedWarehouse] = useState('tienda_trujillo');
   const [qty, setQty] = useState(1);
   const { addItem } = useCartStore();
   const { user } = useAuthStore();
@@ -26,7 +27,15 @@ export default function ProductDetail() {
 
   const handleAddToCart = () => {
     if (!selectedSize) return alert('Selecciona una talla');
-    addItem(product, selectedSize, qty);
+    
+    const warehouseInventory = product.inventory?.[selectedWarehouse];
+    const sizeStock = warehouseInventory?.sizes?.[selectedSize] || 0;
+    
+    if (sizeStock < qty) {
+      return alert(`Stock insuficiente para talla ${selectedSize}. Disponible: ${sizeStock}`);
+    }
+    
+    addItem(product, selectedSize, qty, selectedWarehouse);
   };
 
   if (loading) return <p style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>Cargando...</p>;
@@ -35,6 +44,9 @@ export default function ProductDetail() {
   const image = product.primary_image || product.images?.[0]?.image_url || '/logo.png';
   const allImages = [image, ...(product.images || []).map(i => i.image_url).filter(u => u !== image)];
   const sizes = [36, 37, 38, 39, 40, 41, 42, 43];
+  
+  const warehouseInventory = product.inventory?.[selectedWarehouse];
+  const getSizeStock = (size) => warehouseInventory?.sizes?.[size] || 0;
 
   return (
     <section style={{ padding: '48px 0' }}>
@@ -77,21 +89,85 @@ export default function ProductDetail() {
               )}
             </div>
 
+            {/* Warehouse Selector */}
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: '#374151' }}>Sede de Recojo</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => { setSelectedWarehouse('tienda_trujillo'); setSelectedSize(null); }}
+                  style={{
+                    flex: 1, padding: '10px 16px', borderRadius: 'var(--radius)',
+                    border: `2px solid ${selectedWarehouse === 'tienda_trujillo' ? '#000' : '#d1d5db'}`,
+                    background: selectedWarehouse === 'tienda_trujillo' ? '#000' : '#fff',
+                    color: selectedWarehouse === 'tienda_trujillo' ? '#fff' : '#374151',
+                    fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >
+                  Trujillo
+                </button>
+                <button
+                  onClick={() => { setSelectedWarehouse('tienda_lima'); setSelectedSize(null); }}
+                  style={{
+                    flex: 1, padding: '10px 16px', borderRadius: 'var(--radius)',
+                    border: `2px solid ${selectedWarehouse === 'tienda_lima' ? '#000' : '#d1d5db'}`,
+                    background: selectedWarehouse === 'tienda_lima' ? '#000' : '#fff',
+                    color: selectedWarehouse === 'tienda_lima' ? '#fff' : '#374151',
+                    fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >
+                  Lima
+                </button>
+              </div>
+              {warehouseInventory && (
+                <p style={{ fontSize: 12, color: '#666', marginTop: 6 }}>
+                  Stock total en {selectedWarehouse === 'tienda_trujillo' ? 'Trujillo' : 'Lima'}: <strong>{warehouseInventory.stock} unidades</strong>
+                </p>
+              )}
+            </div>
+
             {/* Sizes */}
             <div style={{ marginBottom: 24 }}>
               <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: '#374151' }}>Talla</p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {sizes.map(s => (
-                  <button key={s} onClick={() => setSelectedSize(s)} style={{
-                    width: 44, height: 44, borderRadius: 'var(--radius)',
-                    border: `2px solid ${selectedSize === s ? '#000' : '#d1d5db'}`,
-                    background: selectedSize === s ? '#000' : '#fff',
-                    color: selectedSize === s ? '#fff' : '#374151',
-                    fontSize: 15, fontWeight: 500, cursor: 'pointer',
-                    transition: 'all 0.15s',
-                  }}>{s}</button>
-                ))}
+                {sizes.map(s => {
+                  const stock = getSizeStock(s);
+                  const isOutOfStock = stock === 0;
+                  const isLowStock = stock > 0 && stock <= 2;
+                  const isSelected = selectedSize === s;
+                  
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => !isOutOfStock && setSelectedSize(s)}
+                      disabled={isOutOfStock}
+                      style={{
+                        width: 54, height: 62, borderRadius: 'var(--radius)',
+                        border: `2px solid ${isSelected ? '#000' : isOutOfStock ? '#e5e7eb' : '#d1d5db'}`,
+                        background: isSelected ? '#000' : isOutOfStock ? '#f3f4f6' : '#fff',
+                        color: isSelected ? '#fff' : isOutOfStock ? '#9ca3af' : '#374151',
+                        fontSize: 15, fontWeight: 500,
+                        cursor: isOutOfStock ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.15s',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        opacity: isOutOfStock ? 0.5 : 1,
+                      }}
+                    >
+                      <span>{s}</span>
+                      <span style={{
+                        fontSize: 10, marginTop: 2,
+                        color: isSelected ? '#fff' : isOutOfStock ? '#9ca3af' : isLowStock ? '#f59e0b' : '#6b7280',
+                      }}>
+                        {isOutOfStock ? 'Agotado' : `${stock} disp.`}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
+              {selectedSize && (
+                <p style={{ fontSize: 13, color: '#000', marginTop: 8, fontWeight: 600 }}>
+                  Talla {selectedSize}: {getSizeStock(selectedSize)} unidades disponibles
+                </p>
+              )}
             </div>
 
             {/* Quantity */}
@@ -107,11 +183,22 @@ export default function ProductDetail() {
                   border: '1px solid #d1d5db', borderLeft: 'none', borderRight: 'none',
                   fontSize: 16, fontWeight: 600, color: '#374151',
                 }}>{qty}</span>
-                <button onClick={() => setQty(qty + 1)} style={{
-                  width: 44, height: 44, border: '1px solid #d1d5db', borderRadius: '0 var(--radius) var(--radius) 0',
-                  background: '#f9fafb', fontSize: 18, cursor: 'pointer', color: '#374151',
-                }}>+</button>
+                <button
+                  onClick={() => {
+                    const maxStock = selectedSize ? getSizeStock(selectedSize) : 99;
+                    setQty(Math.min(maxStock, qty + 1));
+                  }}
+                  style={{
+                    width: 44, height: 44, border: '1px solid #d1d5db', borderRadius: '0 var(--radius) var(--radius) 0',
+                    background: '#f9fafb', fontSize: 18, cursor: 'pointer', color: '#374151',
+                  }}
+                >+</button>
               </div>
+              {selectedSize && (
+                <p style={{ fontSize: 12, color: '#666', marginTop: 6 }}>
+                  Máximo disponible: {getSizeStock(selectedSize)} unidades
+                </p>
+              )}
               {qty >= 3 && (
                 <p style={{ color: 'var(--primary-container)', fontSize: 13, fontWeight: 600, marginTop: 8 }}>
                   🎉 ¡Precio mayorista aplicado!

@@ -14,6 +14,7 @@ import inventoryRoutes from './src/routes/inventory.js';
 import reviewRoutes from './src/routes/reviews.js';
 import categoryRoutes from './src/routes/categories.js';
 import culqiRoutes from './src/routes/culqi.js';
+import mobileRoutes from './src/routes/mobile.js';
 
 // Import error handler
 import { errorHandler } from './src/middlewares/errorHandler.js';
@@ -59,6 +60,7 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/culqi', culqiRoutes);
+app.use('/api', mobileRoutes); // Rutas móviles: /login, /orders/:id/deliver, /employees/:id/deliveries
 
 // 404 handler
 app.use((req, res) => {

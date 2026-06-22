@@ -68,14 +68,22 @@ CREATE TABLE orders (
   subtotal DECIMAL(10,2) NOT NULL,
   total DECIMAL(10,2) NOT NULL,
   discount_applied BOOLEAN DEFAULT FALSE,
-  status ENUM('pendiente','pagado','preparando','enviado','entregado','cancelado') DEFAULT 'pendiente',
+  status ENUM('pendiente','pendiente_validacion','pagado','preparando','enviado','listo_recojo','entregado','cancelado','rechazado_pago') DEFAULT 'pendiente',
   delivery_method ENUM('recojo_tienda','envio_agencia') NOT NULL,
   delivery_location ENUM('trujillo','lima') NULL,
   payment_method ENUM('culqi','yape','plin') NOT NULL,
   payment_proof VARCHAR(500) NULL,
+  payment_validation_status ENUM('none','pending','approved','rejected') DEFAULT 'none',
+  payment_validated_by INT NULL,
+  payment_validated_at TIMESTAMP NULL,
+  payment_rejection_reason VARCHAR(500) NULL,
   tracking_code VARCHAR(100) NULL,
   qr_code TEXT NULL,
+  ready_for_pickup_at TIMESTAMP NULL,
+  delivered_at TIMESTAMP NULL,
+  delivered_by INT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_status_delivery (status, delivery_method, delivery_location),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
@@ -89,6 +97,21 @@ CREATE TABLE order_items (
   warehouse ENUM('fabrica','tienda_trujillo','tienda_lima') NOT NULL,
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+-- Order Events (audit trail)
+CREATE TABLE order_events (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL,
+  from_status VARCHAR(40) NULL,
+  to_status VARCHAR(40) NOT NULL,
+  actor_user_id INT NULL,
+  actor_role VARCHAR(40) NULL,
+  event_type VARCHAR(60) NOT NULL,
+  payload_json JSON NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_order_events (order_id, created_at),
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- Reviews

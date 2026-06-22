@@ -5,7 +5,17 @@ const CART_KEY = 'dibas_cart';
 const loadCart = () => {
   try {
     const data = localStorage.getItem(CART_KEY);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    // Migración: descartar items viejos que no tengan warehouse o size
+    // (ocurre cuando el usuario tenía items en el carrito antes de la feature de tallas)
+    const migrated = (Array.isArray(parsed) ? parsed : []).filter(item =>
+      item && item.product && item.size != null && item.warehouse
+    );
+    if (migrated.length !== (Array.isArray(parsed) ? parsed.length : 0)) {
+      localStorage.setItem(CART_KEY, JSON.stringify(migrated));
+    }
+    return migrated;
   } catch { return []; }
 };
 
@@ -52,21 +62,21 @@ export const useAuthStore = create((set) => ({
 export const useCartStore = create((set, get) => ({
   items: loadCart(),
 
-  addItem: (product, size, quantity = 1) => {
+  addItem: (product, size, quantity = 1, warehouse = null) => {
     set((state) => {
       const price = product.price_retail;
       const existing = state.items.find(
-        (i) => i.product.id === product.id && i.size === size
+        (i) => i.product.id === product.id && i.size === size && i.warehouse === warehouse
       );
       let newItems;
       if (existing) {
         newItems = state.items.map((i) =>
-          i.product.id === product.id && i.size === size
+          i.product.id === product.id && i.size === size && i.warehouse === warehouse
             ? { ...i, quantity: i.quantity + quantity }
             : i
         );
       } else {
-        newItems = [...state.items, { product, size, quantity, price }];
+        newItems = [...state.items, { product, size, quantity, price, warehouse }];
       }
       saveCart(newItems);
       return { items: newItems };

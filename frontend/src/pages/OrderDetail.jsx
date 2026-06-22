@@ -5,11 +5,14 @@ import { useAuthStore } from '../store';
 
 const statusConfig = {
   pendiente: { bg: '#fef3c7', color: '#92400e', label: 'Pendiente', icon: 'schedule' },
+  pendiente_validacion: { bg: '#fef3c7', color: '#92400e', label: 'Pendiente de validación', icon: 'hourglass_empty' },
   pagado: { bg: '#d1fae5', color: '#065f46', label: 'Pagado', icon: 'check_circle' },
   preparando: { bg: '#dbeafe', color: '#1e40af', label: 'Preparando', icon: 'local_shipping' },
   enviado: { bg: '#e0e7ff', color: '#3730a3', label: 'Enviado', icon: 'local_shipping' },
+  listo_recojo: { bg: '#ddd6fe', color: '#5b21b6', label: 'Listo para recojo', icon: 'storefront' },
   entregado: { bg: '#d1fae5', color: '#065f46', label: 'Entregado', icon: 'check_circle' },
   cancelado: { bg: '#fee2e2', color: '#991b1b', label: 'Cancelado', icon: 'cancel' },
+  rechazado_pago: { bg: '#fee2e2', color: '#991b1b', label: 'Pago rechazado', icon: 'error' },
 };
 
 const paymentLabels = { culqi: 'Tarjeta (Culqi)', yape: 'Yape', plin: 'Plin' };
@@ -27,9 +30,16 @@ export default function OrderDetail() {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    orderService.getById(id).then(res => {
-      setOrder(res.data.order);
-    }).finally(() => setLoading(false));
+    setLoading(true);
+    orderService.getById(id)
+      .then(res => {
+        setOrder(res.data.order);
+      })
+      .catch((err) => {
+        console.error('Error loading order:', err);
+        setOrder(null);
+      })
+      .finally(() => setLoading(false));
   }, [id]);
 
   const fetchQR = async () => {
@@ -39,6 +49,14 @@ export default function OrderDetail() {
     } catch (err) {
       console.error('QR error:', err);
     }
+  };
+
+  const openBoleta = () => {
+    // La boleta requiere auth via Bearer token; abrimos una ventana
+    // pasando el token en la URL para que la página pueda fetchearla
+    const token = localStorage.getItem('dibas_token');
+    const url = `/api/orders/${id}/boleta?t=${token}`;
+    window.open(url, '_blank');
   };
 
   const handleUploadProof = async (e) => {
@@ -62,11 +80,13 @@ export default function OrderDetail() {
   if (loading) return <p style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>Cargando...</p>;
   if (!order) return <p style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>Pedido no encontrado</p>;
 
+  // Constantes derivadas — solo después de validar que order existe
   const st = statusConfig[order.status] || statusConfig.pendiente;
   const isPickup = order.delivery_method === 'recojo_tienda';
   const isPendingPayment = order.status === 'pendiente' && (order.payment_method === 'yape' || order.payment_method === 'plin');
   const paymentLabel = paymentLabels[order.payment_method] || order.payment_method;
   const deliveryLabel = deliveryLabels[order.delivery_method] || order.delivery_method;
+  const canShowBoleta = ['pagado', 'preparando', 'listo_recojo', 'entregado', 'enviado'].includes(order.status);
 
   const locationLabels = { trujillo: 'Trujillo — Jr. Pizarro 456', lima: 'Lima — Av. Larco 1024' };
 
@@ -122,26 +142,22 @@ export default function OrderDetail() {
             )}
           </div>
 
-          {/* QR Code for pickup orders */}
+          {/* Acciones: Boleta y QR */}
+          {/* Message when order is paid but not ready yet */}
           {isPickup && order.status === 'pagado' && (
-            <div style={{ marginTop: 24, textAlign: 'center' }}>
-              <button onClick={fetchQR} style={{
-                padding: '12px 24px', background: 'var(--primary-container)', color: '#000',
-                border: 'none', borderRadius: 'var(--radius)', fontWeight: 700, cursor: 'pointer', fontSize: 14,
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-              }}>
-                <span className="material-symbols-outlined">qr_code</span>
-                {qrCode ? 'Actualizar QR' : 'Generar QR de recojo'}
-              </button>
-              {qrCode && (
-                <div style={{ marginTop: 20, padding: 20, background: '#fff', borderRadius: 'var(--radius)', display: 'inline-block' }}>
-                  <img src={qrCode} alt="QR de recojo" style={{ width: 250, height: 250 }} />
-                  <p style={{ color: '#333', fontSize: 13, marginTop: 8, fontWeight: 600 }}>
-                    Presenta este QR al recoger tu pedido
-                  </p>
-                  <p style={{ color: '#666', fontSize: 12 }}>{locationLabels[order.delivery_location]}</p>
-                </div>
-              )}
+            <div style={{ marginTop: 24, padding: 16, background: 'var(--bg-dark)', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)', textAlign: 'center' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 32, color: 'var(--primary-container)', marginBottom: 8 }}>hourglass_empty</span>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>Tu pedido está siendo preparado</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>Te notificaremos cuando esté listo para recojo</p>
+            </div>
+          )}
+
+          {/* Message when order is being prepared */}
+          {isPickup && order.status === 'preparando' && (
+            <div style={{ marginTop: 24, padding: 16, background: 'var(--bg-dark)', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)', textAlign: 'center' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#1e40af', marginBottom: 8 }}>inventory_2</span>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600 }}>Estamos preparando tu pedido</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>El QR de recojo estará disponible pronto</p>
             </div>
           )}
 
@@ -162,6 +178,68 @@ export default function OrderDetail() {
                   {uploading ? 'Subiendo...' : 'Subir comprobante'}
                 </button>
               </form>
+            </div>
+          )}
+
+          {/* Acciones: Boleta y QR */}
+          {(canShowBoleta || isPickup) && (
+            <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--outline-variant)' }}>
+              {isPickup && order.status === 'listo_recojo' && (
+                <div style={{ marginBottom: 16 }}>
+                  {qrCode ? (
+                    <div style={{ background: '#fff', borderRadius: 'var(--radius-lg)', padding: 20, textAlign: 'center' }}>
+                      <img src={qrCode} alt="QR de recojo" style={{ width: 220, height: 220, display: 'inline-block' }} />
+                      <p style={{ color: '#18181B', fontSize: 14, marginTop: 12, fontWeight: 600 }}>
+                        Presenta este QR al vendedor para recoger tu pedido
+                      </p>
+                      <p style={{ color: '#6b7280', fontSize: 12, marginTop: 4 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 2 }}>storefront</span>
+                        {locationLabels[order.delivery_location]}
+                      </p>
+                      <button
+                        onClick={fetchQR}
+                        style={{
+                          marginTop: 12, padding: '6px 16px', background: 'transparent', color: '#18181B',
+                          border: '1px solid #d1d5db', borderRadius: 'var(--radius)', fontSize: 12,
+                          fontWeight: 500, cursor: 'pointer',
+                        }}
+                      >
+                        Actualizar QR
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={fetchQR}
+                      style={{
+                        width: '100%', padding: '14px 20px',
+                        background: 'var(--primary-container)', color: '#000',
+                        border: 'none', borderRadius: 'var(--radius-lg)',
+                        fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 22 }}>qr_code_2</span>
+                      Generar QR de recojo
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {canShowBoleta && (
+                <button
+                  onClick={openBoleta}
+                  style={{
+                    width: '100%', padding: '12px 20px',
+                    background: 'transparent', color: 'var(--text-on-light)',
+                    border: '1px solid #d1d5db', borderRadius: 'var(--radius)',
+                    fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>receipt_long</span>
+                  Ver Boleta Electrónica {order.boleta_number ? `· ${order.boleta_number}` : ''}
+                </button>
+              )}
             </div>
           )}
 

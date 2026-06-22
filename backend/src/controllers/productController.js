@@ -15,6 +15,42 @@ export async function listProducts(req, res, next) {
       limit: parseInt(limit) || 12
     });
 
+    // Enriquecer cada producto con su inventory resumido (sizes por sede)
+    // 1 query batch para traer todos los inventarios de los productos listados
+    if (result.products.length > 0) {
+      const productIds = result.products.map(p => p.id);
+      const placeholders = productIds.map(() => '?').join(',');
+      const [invRows] = await pool.query(
+        `SELECT i.product_id, i.warehouse, i.stock,
+                (SELECT JSON_OBJECTAGG(iz.size, iz.stock)
+                 FROM inventory_sizes iz
+                 WHERE iz.inventory_id = i.id) as sizes
+         FROM inventory i
+         WHERE i.product_id IN (${placeholders})`,
+        productIds
+      );
+
+      // Mapear inventarios por product_id
+      const invByProduct = {};
+      for (const row of invRows) {
+        if (!invByProduct[row.product_id]) invByProduct[row.product_id] = {};
+        // JSON_OBJECTAGG puede devolver string u objeto según driver
+        let sizes = row.sizes;
+        if (typeof sizes === 'string') {
+          try { sizes = JSON.parse(sizes); } catch { sizes = {}; }
+        }
+        if (!sizes || typeof sizes !== 'object') sizes = {};
+        invByProduct[row.product_id][row.warehouse] = {
+          stock: row.stock,
+          sizes
+        };
+      }
+
+      for (const product of result.products) {
+        product.inventory = invByProduct[product.id] || {};
+      }
+    }
+
     res.json(result);
   } catch (err) {
     next(err);

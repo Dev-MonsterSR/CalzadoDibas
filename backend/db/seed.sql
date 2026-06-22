@@ -46,6 +46,25 @@ INSERT INTO inventory (product_id, warehouse, stock, min_stock) VALUES
   (7, 'fabrica', 25, 6), (7, 'tienda_trujillo', 5, 6), (7, 'tienda_lima', 6, 6),
   (8, 'fabrica', 55, 6), (8, 'tienda_trujillo', 14, 6), (8, 'tienda_lima', 11, 6);
 
+-- Inventory Sizes (distribución del stock por tallas 36-43)
+-- Para cada registro de inventory, distribuimos su stock entre las 8 tallas
+-- siguiendo la distribución normal centrada en 39 (talla media).
+-- Tabla auxiliar con la distribución de probabilidad:
+--   36: 1, 37: 3, 38: 6, 39: 8, 40: 8, 41: 6, 42: 3, 43: 1 (suma = 36)
+-- Luego multiplicamos por stock/36 para escalar.
+INSERT INTO inventory_sizes (inventory_id, size, stock)
+SELECT
+  inv.id,
+  s.size,
+  ROUND(inv.stock * s.weight / 36) AS stock_per_size
+FROM inventory inv
+CROSS JOIN (
+  SELECT 36 AS size, 1 AS weight UNION ALL SELECT 37, 3 UNION ALL
+  SELECT 38, 6 UNION ALL SELECT 39, 8 UNION ALL
+  SELECT 40, 8 UNION ALL SELECT 41, 6 UNION ALL
+  SELECT 42, 3 UNION ALL SELECT 43, 1
+) s;
+
 -- Coupons
 INSERT INTO coupons (code, discount_percent, valid_from, valid_until, max_uses, is_active) VALUES
   ('BIENVENIDO10', 10, '2026-01-01', '2026-12-31', 100, TRUE),

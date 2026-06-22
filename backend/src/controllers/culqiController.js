@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import pool from '../config/db.js';
+import { Order } from '../models/Order.js';
 
 const CULQI_SECRET_KEY = process.env.culqi_secret_key || '';
 const CULQI_PUBLIC_KEY = process.env.culqi_public_key || '';
@@ -96,9 +97,10 @@ export async function payWithCard(req, res, next) {
     }
 
     // Update order status
+    const boleta = await Order.setBoletaNumber(order_id);
     await pool.execute(
-      'UPDATE orders SET status = "pagado", payment_method = "culqi", tracking_code = ? WHERE id = ?',
-      [chargeData.id, order_id]
+      'UPDATE orders SET status = "pagado", payment_method = "culqi", tracking_code = ?, boleta_number = ? WHERE id = ?',
+      [chargeData.id, boleta, order_id]
     );
 
     res.json({
@@ -109,6 +111,7 @@ export async function payWithCard(req, res, next) {
         currency_code: chargeData.currency_code,
         status: chargeData.status,
       },
+      boleta_number: boleta,
       order_id: order_id
     });
   } catch (err) {
@@ -233,9 +236,10 @@ export async function createCharge(req, res, next) {
     }
 
     if (order_id) {
+      const boleta = await Order.setBoletaNumber(order_id);
       await pool.execute(
-        'UPDATE orders SET status = "pagado", payment_method = "culqi", tracking_code = ? WHERE id = ? AND user_id = ?',
-        [data.id, order_id, req.user.id]
+        'UPDATE orders SET status = "pagado", payment_method = "culqi", tracking_code = ?, boleta_number = ? WHERE id = ? AND user_id = ?',
+        [data.id, boleta, order_id, req.user.id]
       );
     }
 

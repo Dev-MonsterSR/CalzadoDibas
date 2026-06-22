@@ -81,13 +81,31 @@ export const Product = {
     );
     product.images = images;
 
-    // Get inventory
+    // Get inventory with sizes
     const [inventory] = await pool.execute(
-      'SELECT warehouse, stock, min_stock FROM inventory WHERE product_id = ?',
+      'SELECT id, warehouse, stock, min_stock FROM inventory WHERE product_id = ?',
       [id]
     );
-    product.inventory = inventory.reduce((acc, inv) => {
-      acc[inv.warehouse] = { stock: inv.stock, min_stock: inv.min_stock, low_stock: inv.stock <= inv.min_stock };
+    
+    const inventoryWithSizes = await Promise.all(inventory.map(async (inv) => {
+      const [sizes] = await pool.execute(
+        'SELECT size, stock FROM inventory_sizes WHERE inventory_id = ? ORDER BY size ASC',
+        [inv.id]
+      );
+      return {
+        warehouse: inv.warehouse,
+        stock: inv.stock,
+        min_stock: inv.min_stock,
+        low_stock: inv.stock <= inv.min_stock,
+        sizes: sizes.reduce((acc, s) => {
+          acc[s.size] = s.stock;
+          return acc;
+        }, {})
+      };
+    }));
+    
+    product.inventory = inventoryWithSizes.reduce((acc, inv) => {
+      acc[inv.warehouse] = inv;
       return acc;
     }, {});
 

@@ -28,6 +28,8 @@ export const orderService = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
   getQR: (orderId) => api.get(`/orders/${orderId}/qr`),
+  getEvents: (orderId) => api.get(`/orders/${orderId}/events`),
+  getBoletaUrl: (orderId) => `/api/orders/${orderId}/boleta`,
 };
 
 export const reviewService = {
@@ -59,6 +61,10 @@ export const adminService = {
   deleteCategory: (id) => api.delete(`/admin/categories/${id}`),
   listOrders: (params = {}) => api.get('/admin/orders', { params }),
   updateOrderStatus: (id, data) => api.put(`/admin/orders/${id}/status`, data),
+  approvePayment: (id) => api.post(`/admin/orders/${id}/payment/approve`),
+  rejectPayment: (id, reason) => api.post(`/admin/orders/${id}/payment/reject`, { reason }),
+  shipOrder: (id, data) => api.post(`/admin/orders/${id}/ship`, data),
+  readyPickup: (id) => api.post(`/admin/orders/${id}/ready-pickup`),
   listCoupons: () => api.get('/admin/coupons'),
   createCoupon: (data) => api.post('/admin/coupons', data),
   updateCoupon: (id, data) => api.put(`/admin/coupons/${id}`, data),
@@ -90,5 +96,12 @@ export const inventoryService = {
   getMyInventory: () => api.get('/inventory/my-store'),
   updateStock: (id, data) => api.put(`/inventory/${id}`, data),
   pickupOrders: () => api.get('/inventory/pickup-orders'),
+  deliveredToday: () => api.get('/inventory/delivered-today'),
+  verifyQR: (token) => api.post('/inventory/verify-qr', { token }),
   markDelivered: (orderId) => api.put(`/inventory/pickup/${orderId}`),
+  lowStock: () => api.get('/inventory/low-stock'),
+  adjustStock: (data) => api.post('/inventory/adjust', data),
+  adjustStockBatch: (data) => api.post('/inventory/adjust-batch', data),
+  getMovements: (params = {}) => api.get('/inventory/movements', { params }),
+  getProductStock: (productId) => api.get(`/inventory/product/${productId}/stock`),
 };

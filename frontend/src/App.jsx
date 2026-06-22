@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store';
 
 // Layout
@@ -50,14 +50,17 @@ function ProtectedRoute({ children, allowedRoles }) {
 
 export default function App() {
   const { init } = useAuthStore();
+  const location = useLocation();
 
   useEffect(() => {
     init();
   }, [init]);
 
+  const isSellerRoute = location.pathname.startsWith('/seller');
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Header />
+      {!isSellerRoute && <Header />}
       <main style={{ flex: 1 }}>
         <Routes>
           {/* Public */}
@@ -124,7 +127,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <Footer />
+      {!isSellerRoute && <Footer />}
     </div>
   );
 }

@@ -36,10 +36,16 @@ export default function Cart() {
               }}>
                 <img src={item.product.primary_image || item.product.images?.[0]?.image_url || '/logo.png'} alt={item.product.name}
                   style={{ width: 120, height: 120, borderRadius: 'var(--radius)', objectFit: 'cover', flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                   <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{item.product.name}</h3>
-                  <p style={{ color: '#888', fontSize: 14, marginBottom: 12 }}>Talla: {item.size}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <p style={{ color: '#888', fontSize: 14, marginBottom: 4 }}>Talla: {item.size}</p>
+                  {item.warehouse && (
+                    <p style={{ color: '#888', fontSize: 13, marginBottom: 8 }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 2 }}>storefront</span>
+                      Sede: {item.warehouse === 'tienda_trujillo' ? 'Trujillo' : item.warehouse === 'tienda_lima' ? 'Lima' : 'Fábrica'}
+                    </p>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
                       <button onClick={() => updateQuantity(i, item.quantity - 1)} style={{
                         width: 32, height: 32, border: '1px solid #d1d5db', borderRadius: 'var(--radius-sm) 0 0 var(--radius-sm)',
