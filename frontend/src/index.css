@@ -178,6 +178,10 @@ input, select, textarea {
   .hero-stats > div > span:nth-child(2) {
     font-size: 26px !important;
   }
+  /* Hero stat card: resetear transform en mobile (en desktop hace zigzag con hover) */
+  .hero-stat-card {
+    transform: none !important;
+  }
   /* Benefits: 1 columna en mobile */
   .benefits-grid {
     grid-template-columns: 1fr !important;

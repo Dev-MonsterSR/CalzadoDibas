@@ -93,7 +93,7 @@ export default function Home() {
             {/* Right - Stats */}
             <div className="hero-stats" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               {stats.map((s, i) => (
-                <div key={i} style={{
+                <div key={i} className="hero-stat-card" style={{
                   ...glassCard,
                   transform: i % 2 === 0 ? 'translateY(8px)' : 'translateY(-8px)',
                 }}
