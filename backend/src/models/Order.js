@@ -319,6 +319,7 @@ export const Order = {
        FROM orders o
        JOIN users u ON o.user_id = u.id
        WHERE o.delivery_location = ?
+         AND o.delivery_method = 'recojo_tienda'
          AND o.status IN ('pagado', 'preparando', 'listo_recojo')
        ORDER BY
          CASE o.status

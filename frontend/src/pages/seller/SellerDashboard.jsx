@@ -41,7 +41,13 @@ export default function SellerDashboard() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+    // Auto-refresh cada 30 segundos para que el vendedor vea pedidos nuevos
+    // sin tener que refrescar manualmente la pagina
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
 
   const lowStockItems = inventory.filter(i => i.stock <= i.min_stock);
   const totalSalesToday = deliveredToday.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
@@ -197,13 +203,19 @@ export default function SellerDashboard() {
                       {pickupOrders.length === 0 && (
                         <tr><td colSpan={5} className="px-6 py-8 text-center text-on-surface-variant">No hay pedidos pendientes de recojo</td></tr>
                       )}
-                      {pickupOrders.map(order => (
+                      {pickupOrders.map(order => {
+                        const statusBadge = {
+                          'pagado': { label: 'Pagado', bg: 'bg-blue-500/10', text: 'text-blue-500' },
+                          'preparando': { label: 'Preparando', bg: 'bg-orange-500/10', text: 'text-orange-500' },
+                          'listo_recojo': { label: 'Listo Recojo', bg: 'bg-yellow-500/10', text: 'text-yellow-500' },
+                        }[order.status] || { label: order.status, bg: 'bg-gray-500/10', text: 'text-gray-500' };
+                        return (
                         <tr key={order.id} className="hover:bg-surface-variant/20 transition-colors">
                           <td className="px-6 py-4 text-on-surface font-label-md">#{order.id}</td>
                           <td className="px-6 py-4 text-on-surface-variant font-body-md">{order.customer_name || 'Cliente'}</td>
                           <td className="px-6 py-4 text-on-surface-variant font-body-md">{order.items?.length || 0} items</td>
                           <td className="px-6 py-4">
-                            <span className="px-2 py-1 bg-yellow-500/10 text-yellow-500 text-xs font-bold rounded">Listo Recojo</span>
+                            <span className={`px-2 py-1 ${statusBadge.bg} ${statusBadge.text} text-xs font-bold rounded`}>{statusBadge.label}</span>
                           </td>
                           <td className="px-6 py-4 text-right">
                             <button onClick={() => handleVerifyQR(order.id)} disabled={verifying} className="bg-primary text-on-primary px-3 py-1.5 rounded text-xs font-bold hover:brightness-110 flex items-center gap-1 ml-auto disabled:opacity-50">
@@ -212,7 +224,8 @@ export default function SellerDashboard() {
                             </button>
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
