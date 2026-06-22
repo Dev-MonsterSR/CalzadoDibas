@@ -12,6 +12,7 @@ export default function AdminProducts() {
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(EMPTY_PRODUCT);
   const [imageFiles, setImageFiles] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
 
   useEffect(() => {
     Promise.all([
@@ -26,7 +27,42 @@ export default function AdminProducts() {
     material: p.material || '', brand: p.brand || 'DIBAS',
     price_retail: p.price_retail || '', price_wholesale: p.price_wholesale || '',
     category_id: p.category_id || '',
-  }); setImageFiles([]); setShowForm(true); };
+  }); setImageFiles([]); setShowForm(true);
+    // Cargar imagenes existentes del producto (ordenadas por position)
+    setExistingImages(p.images && p.images.length > 0
+      ? [...p.images].sort((a, b) => a.position - b.position)
+      : []
+    );
+  };
+
+  // Resetear imagenes existentes al cerrar el form o crear nuevo
+  const closeForm = () => {
+    setShowForm(false);
+    setImageFiles([]);
+    setExistingImages([]);
+  };
+
+  const handleDeleteExistingImage = async (imageId) => {
+    if (!editId) return;
+    if (!confirm('¿Eliminar esta imagen?')) return;
+    try {
+      await adminService.deleteProductImage(editId, imageId);
+      setExistingImages(prev => prev.filter(img => img.id !== imageId));
+    } catch (err) {
+      alert('Error al eliminar imagen: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleSetPrimary = async (imageId) => {
+    if (!editId) return;
+    try {
+      await adminService.setPrimaryImage(editId, imageId);
+      // Reordenar localmente
+      setExistingImages(prev => prev.map(img => ({ ...img, is_primary: img.id === imageId ? 1 : 0 })));
+    } catch (err) {
+      alert('Error al marcar como principal: ' + (err.response?.data?.message || err.message));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,8 +87,7 @@ export default function AdminProducts() {
       }
       const r = await adminService.listProducts();
       setProducts(r.data.products || []);
-      setShowForm(false);
-      setImageFiles([]);
+      closeForm();
     } catch (err) { alert(err.response?.data?.message || 'Error al guardar'); }
   };
 
@@ -128,9 +163,40 @@ export default function AdminProducts() {
               <label style={{ display: 'block', fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Descripción</label>
               <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={3} style={{...inputStyle, resize: 'vertical'}} />
             </div>
+            {/* Imagenes existentes del producto (solo al editar) */}
+            {editId && existingImages.length > 0 && (
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ display: 'block', fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>
+                  Imágenes actuales ({existingImages.length})
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 12 }}>
+                  {existingImages.map(img => (
+                    <div key={img.id} style={{ position: 'relative', border: img.is_primary ? '2px solid var(--primary-container)' : '1px solid var(--outline-variant)', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'var(--bg-tertiary)' }}>
+                      <img src={img.image_url} alt="" style={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }} />
+                      {img.is_primary ? (
+                        <div style={{ position: 'absolute', top: 4, left: 4, background: 'var(--primary-container)', color: '#000', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>PRINCIPAL</div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleSetPrimary(img.id)}
+                          style={{ position: 'absolute', top: 4, left: 4, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 10, border: 'none', padding: '2px 6px', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                        >Marcar principal</button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteExistingImage(img.id)}
+                        title="Eliminar imagen"
+                        style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(220, 38, 38, 0.9)', color: '#fff', border: 'none', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, lineHeight: 1 }}
+                      >×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div style={{ marginBottom: 18 }}>
               <label style={{ display: 'block', fontSize: 13, color: 'var(--text-muted)', marginBottom: 6 }}>
-                Imágenes del producto {editId ? '(agregar nuevas)' : '(opcional)'}
+                {editId ? 'Agregar nuevas imágenes' : 'Imágenes del producto (opcional)'}
               </label>
               <input
                 type="file"
@@ -140,14 +206,26 @@ export default function AdminProducts() {
                 style={{ ...inputStyle, padding: '8px 10px' }}
               />
               {imageFiles.length > 0 && (
-                <p style={{ marginTop: 6, fontSize: 12, color: 'var(--text-muted)' }}>
-                  {imageFiles.length} imagen(es) seleccionada(s)
-                </p>
+                <div style={{ marginTop: 8 }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
+                    {imageFiles.length} imagen(es) nueva(s) - Vista previa:
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8 }}>
+                    {imageFiles.map((file, idx) => (
+                      <div key={idx} style={{ position: 'relative', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'var(--bg-tertiary)' }}>
+                        <img src={URL.createObjectURL(file)} alt="" style={{ width: '100%', height: 80, objectFit: 'cover', display: 'block' }} />
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 10, padding: '2px 4px', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {file.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
               <button type="submit" style={{ background: 'var(--primary-container)', color: '#000', padding: '10px 24px', borderRadius: 'var(--radius)', fontWeight: 600, border: 'none', cursor: 'pointer' }}>{editId ? 'Guardar Cambios' : 'Crear Producto'}</button>
-              <button type="button" onClick={() => setShowForm(false)} style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)', padding: '10px 24px', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)', cursor: 'pointer' }}>Cancelar</button>
+              <button type="button" onClick={closeForm} style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)', padding: '10px 24px', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)', cursor: 'pointer' }}>Cancelar</button>
             </div>
           </form>
         )}
