@@ -25,7 +25,21 @@
       window.tailwind = window.tailwind || {};
       window.tailwind.suppressProductionWarning = true;
     </script>
-    <script src="/tailwind-cdn.js"></script>
+    <script src="/tailwind-cdn.js" defer></script>
+    <script>
+      // Suprimir el warning de Tailwind que aparece en consola (problema conocido del bundle CDN)
+      // Solo filtra mensajes especificos de Tailwind, no afecta otros warnings legitimos
+      (function() {
+        var origWarn = console.warn;
+        console.warn = function() {
+          var msg = arguments[0];
+          if (typeof msg === 'string' && msg.indexOf('cdn.tailwindcss.com should not be used in production') !== -1) {
+            return; // Silenciar este warning especifico
+          }
+          return origWarn.apply(console, arguments);
+        };
+      })();
+    </script>
     <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
