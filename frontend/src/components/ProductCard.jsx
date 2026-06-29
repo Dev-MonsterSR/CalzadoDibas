@@ -25,7 +25,7 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div style={{
+    <div className="product-card" style={{
       background: 'var(--surface-card)', borderRadius: 'var(--radius-lg)',
       overflow: 'hidden',
       transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -35,7 +35,7 @@ export default function ProductCard({ product }) {
       onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'; }}
     >
       {/* Image */}
-      <Link to={`/producto/${product.id}`} style={{ display: 'block', height: 260, overflow: 'hidden', position: 'relative', background: 'var(--bg-tertiary)' }}>
+      <Link to={`/producto/${product.id}`} className="product-card-image" style={{ display: 'block', height: 260, overflow: 'hidden', position: 'relative', background: 'var(--bg-tertiary)' }}>
         <img src={image} alt={product.name} style={{
           width: '100%', height: '100%', objectFit: 'cover',
           transition: 'transform 0.5s ease',
@@ -54,7 +54,7 @@ export default function ProductCard({ product }) {
       </Link>
 
       {/* Info */}
-      <div style={{ padding: 20 }}>
+      <div className="product-card-info" style={{ padding: 20 }}>
         <Link to={`/producto/${product.id}`} style={{ display: 'block' }}>
           <h3 style={{
             color: 'var(--text-on-light)', fontSize: 16, fontWeight: 700,

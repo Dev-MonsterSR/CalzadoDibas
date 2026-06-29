@@ -241,11 +241,59 @@ input, select, textarea {
     padding: 16px !important;
   }
   .catalog-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+    grid-template-columns: 1fr !important;
     gap: 12px !important;
   }
   .catalog-load-more {
     width: 100% !important;
+  }
+  /* ProductCard en mobile: layout horizontal (imagen izq, info der) */
+  .product-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+  }
+  .product-card-image {
+    width: 140px !important;
+    min-width: 140px !important;
+    height: auto !important;
+    min-height: 160px !important;
+    flex-shrink: 0 !important;
+  }
+  .product-card-image img {
+    height: 100% !important;
+    object-position: center !important;
+  }
+  .product-card-info {
+    flex: 1 !important;
+    padding: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+  .product-card-info h3 {
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+    margin-bottom: 2px !important;
+  }
+  .product-card-info p {
+    font-size: 16px !important;
+    margin-bottom: 8px !important;
+  }
+  /* Botones de sede y talla mas compactos en mobile */
+  .product-card-info button {
+    font-size: 10px !important;
+  }
+  /* Boton Agregar mas compacto */
+  .product-card-info > button:last-of-type {
+    padding: 8px 0 !important;
+    font-size: 12px !important;
+  }
+  /* Tallas mas pequenas */
+  .product-card-info button[style*="width: 32px"] {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 10px !important;
   }
 }
 
