@@ -339,7 +339,7 @@ export async function deleteCategory(req, res, next) {
 export async function listUsers(req, res, next) {
   try {
     const [rows] = await pool.execute(
-      `SELECT id, name, email, role, phone, address, is_active, created_at FROM users ORDER BY created_at DESC`
+      `SELECT id, name, email, role, phone, address, created_at FROM users ORDER BY id ASC`
     );
     res.json({ users: rows });
   } catch (err) {
@@ -364,9 +364,11 @@ export async function updateUserRole(req, res, next) {
 
 export async function toggleUserActive(req, res, next) {
   try {
-    await pool.execute('UPDATE users SET is_active = NOT is_active WHERE id = ?', [req.params.id]);
-    const [rows] = await pool.execute('SELECT id, name, email, is_active FROM users WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Estado actualizado', user: rows[0] });
+    // La tabla users no tiene columna 'is_active' en este schema.
+    // Devolvemos el usuario sin modificar estado (placeholder para mantener compatibilidad).
+    const [rows] = await pool.execute('SELECT id, name, email, role FROM users WHERE id = ?', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'Usuario no encontrado.' });
+    res.json({ message: 'Estado no modificable (is_active no existe en este schema).', user: rows[0] });
   } catch (err) {
     next(err);
   }
@@ -375,7 +377,9 @@ export async function toggleUserActive(req, res, next) {
 // --- Coupon CRUD ---
 export async function listCoupons(req, res, next) {
   try {
-    const [rows] = await pool.execute('SELECT * FROM coupons ORDER BY created_at DESC');
+    // La tabla coupons no tiene columna 'created_at' en este schema.
+    // Usar id DESC (mas nuevo primero) como alternativa.
+    const [rows] = await pool.execute('SELECT * FROM coupons ORDER BY id DESC');
     res.json({ coupons: rows });
   } catch (err) {
     next(err);

@@ -230,44 +230,93 @@ export default function AdminProducts() {
           </form>
         )}
 
-        {/* Table */}
-        <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--outline-variant)', overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', color: 'var(--text-secondary)', minWidth: 900 }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--outline-variant)' }}>
-                {['ID', 'Nombre', 'Código', 'Precio', 'Mayorista', 'Categoría', 'Estado', 'Acciones'].map(h => (
-                  <th key={h} style={{ padding: '14px 20px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {products.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid var(--outline-variant)' }}>
-                  <td style={{ padding: '14px 20px', fontSize: 13, color: 'var(--text-muted)' }}>{p.id}</td>
-                  <td style={{ padding: '14px 20px', fontSize: 14, color: '#fff', fontWeight: 500, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</td>
-                  <td style={{ padding: '14px 20px', fontSize: 13, fontFamily: 'monospace', color: 'var(--text-muted)' }}>{p.code}</td>
-                  <td style={{ padding: '14px 20px', fontSize: 14, color: '#fff', fontWeight: 600 }}>S/ {parseFloat(p.price_retail || 0).toFixed(2)}</td>
-                  <td style={{ padding: '14px 20px', fontSize: 14, color: 'var(--text-muted)' }}>S/ {parseFloat(p.price_wholesale || 0).toFixed(2)}</td>
-                  <td style={{ padding: '14px 20px', fontSize: 14 }}>{p.category_name || '—'}</td>
-                  <td style={{ padding: '14px 20px' }}>
-                    <button onClick={() => handleToggle(p.id, p.is_active)} style={{
-                      padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
-                      background: p.is_active ? '#d1fae5' : '#fee2e2',
-                      color: p.is_active ? '#065f46' : '#991b1b',
-                    }}>{p.is_active ? 'Activo' : 'Inactivo'}</button>
-                  </td>
-                  <td style={{ padding: '14px 20px' }}>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={() => openEdit(p)} style={{ background: 'none', color: 'var(--primary-container)', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Editar</button>
-                      <button onClick={() => handleDelete(p.id, p.name)} style={{ background: 'none', color: '#ef4444', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Eliminar</button>
+        {/* Grid de cards con imagenes */}
+        {products.length === 0 ? (
+          <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: 48, textAlign: 'center', color: 'var(--text-muted)', border: '1px solid var(--outline-variant)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 48, opacity: 0.4 }}>inventory_2</span>
+            <p style={{ marginTop: 12 }}>No hay productos. Crea el primero con "+ Nuevo Producto".</p>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+            {products.map(p => {
+              const primaryImg = p.images && p.images.length > 0
+                ? p.images.find(i => i.is_primary) || p.images[0]
+                : null;
+              return (
+                <div key={p.id} style={{
+                  background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--outline-variant)', overflow: 'hidden',
+                  transition: 'transform 0.2s, border-color 0.2s',
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'var(--primary-container)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'var(--outline-variant)'; }}
+                >
+                  {/* Imagen principal */}
+                  <div style={{ position: 'relative', aspectRatio: '1', background: 'var(--bg-tertiary)' }}>
+                    {primaryImg ? (
+                      <img src={primaryImg.image_url} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 64, color: 'var(--text-muted)', opacity: 0.3 }}>image</span>
+                      </div>
+                    )}
+                    {p.images && p.images.length > 1 && (
+                      <div style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '4px 8px', borderRadius: 'var(--radius-full)', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>photo_library</span>
+                        {p.images.length}
+                      </div>
+                    )}
+                    {!p.is_active && (
+                      <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(220, 38, 38, 0.9)', color: '#fff', padding: '4px 10px', borderRadius: 'var(--radius-full)', fontSize: 11, fontWeight: 700 }}>
+                        INACTIVO
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ padding: 16 }}>
+                    <div style={{ marginBottom: 4 }}>
+                      <p style={{ color: '#fff', fontSize: 15, fontWeight: 600, lineHeight: 1.3, marginBottom: 2 }}>{p.name}</p>
+                      <p style={{ color: 'var(--text-muted)', fontSize: 12, fontFamily: 'monospace' }}>{p.code}</p>
                     </div>
-                  </td>
-                </tr>
-              ))}
-              {products.length === 0 && <tr><td colSpan={8} style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)' }}>No hay productos</td></tr>}
-            </tbody>
-          </table>
-        </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '8px 0' }}>
+                      <span style={{ color: 'var(--primary-container)', fontSize: 18, fontWeight: 700 }}>S/ {parseFloat(p.price_retail || 0).toFixed(2)}</span>
+                      <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>mayor: S/ {parseFloat(p.price_wholesale || 0).toFixed(2)}</span>
+                    </div>
+                    {p.category_name && (
+                      <span style={{ display: 'inline-block', padding: '3px 10px', background: 'var(--bg-tertiary)', color: 'var(--text-muted)', borderRadius: 'var(--radius-full)', fontSize: 11, marginBottom: 12 }}>
+                        {p.category_name}
+                      </span>
+                    )}
+                    <div style={{ display: 'flex', gap: 6, marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--outline-variant)' }}>
+                      <button
+                        onClick={() => openEdit(p)}
+                        className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded bg-primary-container/15 text-primary-container text-label-sm font-bold hover:bg-primary-container/25 transition-colors"
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>edit</span>
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleToggle(p.id, p.is_active)}
+                        className="px-3 py-2 rounded bg-surface-variant/50 text-on-surface-variant text-label-sm font-bold hover:bg-surface-variant transition-colors"
+                        title={p.is_active ? 'Desactivar' : 'Activar'}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{p.is_active ? 'visibility_off' : 'visibility'}</span>
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p.id, p.name)}
+                        className="px-3 py-2 rounded bg-error-container/20 text-error text-label-sm font-bold hover:bg-error-container/40 transition-colors"
+                        title="Eliminar"
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );
