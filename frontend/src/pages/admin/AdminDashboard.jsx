@@ -20,7 +20,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <section style={{ padding: '48px 0' }}>
+    <section style={{ padding: '0' }}>
       <div className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 }}>
           <h1 style={{ color: '#fff', fontSize: 32, fontWeight: 700 }}>Dashboard Admin</h1>

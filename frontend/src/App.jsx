@@ -5,6 +5,7 @@ import { useAuthStore } from './store';
 // Layout
 import Header from './components/Header';
 import Footer from './components/Footer';
+import AdminLayout from './components/AdminLayout';
 
 // Public pages
 import Home from './pages/Home';
@@ -57,10 +58,12 @@ export default function App() {
   }, [init]);
 
   const isSellerRoute = location.pathname.startsWith('/seller');
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const hideHeaderFooter = isSellerRoute || isAdminRoute;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {!isSellerRoute && <Header />}
+      {!hideHeaderFooter && <Header />}
       <main style={{ flex: 1 }}>
         <Routes>
           {/* Public */}
@@ -84,35 +87,35 @@ export default function App() {
             <ProtectedRoute><OrderDetail /></ProtectedRoute>
           } />
 
-          {/* Admin */}
+          {/* Admin (envueltas en AdminLayout con sidebar) */}
           <Route path="/admin" element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminDashboard />
+              <AdminLayout><AdminDashboard /></AdminLayout>
             </ProtectedRoute>
           } />
           <Route path="/admin/products" element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminProducts />
+              <AdminLayout><AdminProducts /></AdminLayout>
             </ProtectedRoute>
           } />
           <Route path="/admin/orders" element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminOrders />
+              <AdminLayout><AdminOrders /></AdminLayout>
             </ProtectedRoute>
           } />
           <Route path="/admin/categories" element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminCategories />
+              <AdminLayout><AdminCategories /></AdminLayout>
             </ProtectedRoute>
           } />
           <Route path="/admin/coupons" element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminCoupons />
+              <AdminLayout><AdminCoupons /></AdminLayout>
             </ProtectedRoute>
           } />
           <Route path="/admin/users" element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminUsers />
+              <AdminLayout><AdminUsers /></AdminLayout>
             </ProtectedRoute>
           } />
 
@@ -127,7 +130,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      {!isSellerRoute && <Footer />}
+      {!hideHeaderFooter && <Footer />}
     </div>
   );
 }
