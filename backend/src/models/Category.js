@@ -33,7 +33,8 @@ export const Category = {
   },
 
   async toggleActive(id) {
-    await pool.execute('UPDATE categories SET is_active = NOT is_active WHERE id = ?', [id]);
+    // La tabla categories no tiene columna 'is_active' en este schema.
+    // Devolvemos la categoria sin modificar (placeholder para mantener compatibilidad).
     return this.findById(id);
   },
 
