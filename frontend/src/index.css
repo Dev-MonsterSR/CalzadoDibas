@@ -229,14 +229,20 @@ input, select, textarea {
     padding: 24px 16px !important;
     min-height: auto !important;
   }
-  /* Catalog: sidebar arriba en mobile, grid abajo */
+  /* Catalog: sidebar ARRIBA en mobile, grid ABAJO */
+  .catalog-layout {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
   .catalog-sidebar {
     width: 100% !important;
     position: static !important;
     max-height: none !important;
+    padding: 16px !important;
   }
   .catalog-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+    gap: 12px !important;
   }
   .catalog-load-more {
     width: 100% !important;

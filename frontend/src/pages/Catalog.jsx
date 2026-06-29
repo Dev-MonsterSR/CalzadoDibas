@@ -110,7 +110,7 @@ export default function Catalog() {
 
       {/* Layout: Sidebar + Grid */}
       <section style={{ paddingBottom: 64 }}>
-        <div className="container" style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+        <div className="container catalog-layout" style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
           {/* Sidebar de filtros */}
           <aside style={sidebarStyle} className="catalog-sidebar">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
