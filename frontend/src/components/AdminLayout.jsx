@@ -99,36 +99,66 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>
 
-      {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container border-t border-outline-variant h-16 flex items-center justify-around z-50">
-        {NAV_ITEMS.slice(0, 5).map(n => (
-          <Link
-            key={n.path}
-            to={n.path}
-            className={`flex flex-col items-center gap-1 ${isActive(n.path, n.exact) ? 'text-primary' : 'text-on-surface-variant'}`}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{n.icon}</span>
-            <span className="text-label-sm" style={{ fontSize: 10 }}>{n.label.slice(0, 6)}</span>
-          </Link>
-        ))}
+      {/* Mobile bottom nav - Liquid Glass */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around h-16 px-2"
+        style={{
+          background: 'rgba(24, 24, 27, 0.75)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.3)',
+        }}
+      >
+        {NAV_ITEMS.slice(0, 5).map(n => {
+          const active = isActive(n.path, n.exact);
+          return (
+            <Link
+              key={n.path}
+              to={n.path}
+              className="relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-all"
+              style={{ color: active ? 'var(--primary-container)' : 'var(--text-muted)' }}
+            >
+              {active && (
+                <span style={{
+                  position: 'absolute', top: -16, left: '50%', transform: 'translateX(-50%)',
+                  width: 24, height: 3, background: 'var(--primary-container)',
+                  borderRadius: '0 0 3px 3px',
+                }} />
+              )}
+              <span className="material-symbols-outlined" style={{
+                fontSize: 22,
+                fontVariationSettings: active ? "'FILL' 1, 'wght' 600" : "'FILL' 0, 'wght' 400",
+              }}>{n.icon}</span>
+              <span className="text-label-sm" style={{ fontSize: 10, fontWeight: active ? 700 : 500 }}>{n.label.slice(0, 6)}</span>
+            </Link>
+          );
+        })}
       </nav>
 
       {/* Main content area */}
       <main className="flex-1 min-w-0">
-        {/* Top bar */}
-        <header className="sticky top-0 z-40 bg-surface-container-lowest/95 backdrop-blur border-b border-outline-variant">
-          <div className="px-6 py-4 flex items-center justify-between">
-            <div>
-              <p className="text-on-surface-variant text-label-sm">Panel de Administración</p>
-              <h1 className="text-on-surface text-title-md font-bold">{currentTitle}</h1>
-            </div>
-            <Link
-              to="/"
-              className="md:hidden text-on-surface-variant text-label-sm hover:text-primary"
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 24 }}>storefront</span>
-            </Link>
+        {/* Top bar - Liquid Glass */}
+        <header
+          className="sticky top-0 z-40 px-6 py-4 flex items-center justify-between"
+          style={{
+            background: 'rgba(24, 24, 27, 0.75)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+          }}
+        >
+          <div>
+            <p className="text-on-surface-variant text-label-sm">Panel de Administración</p>
+            <h1 className="text-on-surface text-title-md font-bold">{currentTitle}</h1>
           </div>
+          <Link
+            to="/"
+            className="md:hidden text-on-surface-variant text-label-sm hover:text-primary"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 24 }}>storefront</span>
+          </Link>
         </header>
 
         <div className="p-6 pb-24 md:pb-6">
