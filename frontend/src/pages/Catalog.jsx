@@ -147,73 +147,30 @@ export default function Catalog() {
               </div>
             </div>
 
-            {/* Categorias */}
-            <div style={{ marginBottom: 20 }}>
-              <label style={filterLabelStyle}>Categoría</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <button
-                  onClick={() => updateFilter('category', 'all')}
-                  className={`flex items-center gap-2 px-3 py-2 rounded text-left text-sm transition-colors ${
-                    filters.category === 'all'
-                      ? 'bg-primary-container/15 text-primary-container font-bold'
-                      : 'text-on-surface-variant hover:bg-surface-variant/30'
-                  }`}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-                    {filters.category === 'all' ? 'radio_button_checked' : 'radio_button_unchecked'}
-                  </span>
-                  <span>Todas</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-muted)' }}>{categories.length}</span>
-                </button>
-                {categories.map(c => (
-                  <button
-                    key={c.id}
-                    onClick={() => updateFilter('category', c.id)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded text-left text-sm transition-colors ${
-                      filters.category === String(c.id)
-                        ? 'bg-primary-container/15 text-primary-container font-bold'
-                        : 'text-on-surface-variant hover:bg-surface-variant/30'
-                    }`}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-                      {filters.category === String(c.id) ? 'radio_button_checked' : 'radio_button_unchecked'}
-                    </span>
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Categorias - Dropdown */}
+            <FilterDropdown
+              label="Categoría"
+              icon="category"
+              options={[
+                { value: 'all', label: 'Todas', count: categories.length },
+                ...categories.map(c => ({ value: String(c.id), label: c.name }))
+              ]}
+              value={filters.category}
+              onChange={(v) => updateFilter('category', v)}
+            />
 
-            {/* Sede / Warehouse */}
-            <div style={{ marginBottom: 20 }}>
-              <label style={filterLabelStyle}>Sede</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {[
-                  { value: 'all', label: 'Todas las sedes', icon: 'store' },
-                  { value: 'trujillo', label: 'Trujillo', icon: 'location_on' },
-                  { value: 'lima', label: 'Lima', icon: 'location_on' },
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    onClick={() => updateFilter('warehouse', opt.value)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded text-left text-sm transition-colors ${
-                      filters.warehouse === opt.value
-                        ? 'bg-primary-container/15 text-primary-container font-bold'
-                        : 'text-on-surface-variant hover:bg-surface-variant/30'
-                    }`}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-                      {filters.warehouse === opt.value ? 'radio_button_checked' : 'radio_button_unchecked'}
-                    </span>
-                    <span className="material-symbols-outlined" style={{ fontSize: 16, opacity: 0.7 }}>{opt.icon}</span>
-                    <span>{opt.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Sede - Dropdown */}
+            <FilterDropdown
+              label="Sede"
+              icon="store"
+              options={[
+                { value: 'all', label: 'Todas las sedes' },
+                { value: 'trujillo', label: 'Trujillo' },
+                { value: 'lima', label: 'Lima' },
+              ]}
+              value={filters.warehouse}
+              onChange={(v) => updateFilter('warehouse', v)}
+            />
 
             {/* Precio */}
             <div style={{ marginBottom: 20 }}>
@@ -295,5 +252,103 @@ export default function Catalog() {
         </div>
       </section>
     </>
+  );
+}
+
+// Componente Dropdown colapsable para filtros
+function FilterDropdown({ label, icon, options, value, onChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedOption = options.find(o => o.value === value) || options[0];
+
+  // Cerrar al hacer click fuera
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(`[data-dropdown="${label}"]`)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen, label]);
+
+  const isActive = value !== 'all';
+
+  return (
+    <div data-dropdown={label} style={{ marginBottom: 16, position: 'relative' }}>
+      <label style={{
+        color: 'var(--text-muted)', fontSize: 12, fontWeight: 600,
+        textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, display: 'block',
+      }}>{label}</label>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded text-sm transition-all"
+        style={{
+          background: 'var(--bg-tertiary)',
+          border: `1px solid ${isActive ? 'var(--primary-container)' : 'var(--outline-variant)'}`,
+          color: isActive ? 'var(--primary-container)' : 'var(--text-secondary)',
+          fontWeight: isActive ? 600 : 400,
+          cursor: 'pointer',
+        }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 18, opacity: 0.7 }}>{icon}</span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {selectedOption.label}
+            {selectedOption.count !== undefined && (
+              <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.7 }}>({selectedOption.count})</span>
+            )}
+          </span>
+        </span>
+        <span className="material-symbols-outlined" style={{
+          fontSize: 18, transition: 'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'none',
+        }}>expand_more</span>
+      </button>
+
+      {isOpen && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, marginTop: 4,
+          background: 'var(--bg-secondary)', border: '1px solid var(--outline-variant)',
+          borderRadius: 'var(--radius)', maxHeight: 240, overflowY: 'auto',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+        }}>
+          {options.map(opt => {
+            const isSelected = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => { onChange(opt.value); setIsOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors"
+                style={{
+                  background: isSelected ? 'var(--primary-container)/15' : 'transparent',
+                  color: isSelected ? 'var(--primary-container)' : 'var(--text-secondary)',
+                  fontWeight: isSelected ? 600 : 400,
+                  border: 'none', cursor: 'pointer',
+                }}
+                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--bg-tertiary)'; }}
+                onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+              >
+                <span style={{
+                  width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+                  background: isSelected ? 'var(--primary-container)' : 'transparent',
+                  border: `2px solid ${isSelected ? 'var(--primary-container)' : 'var(--outline-variant)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {isSelected && (
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#000' }} />
+                  )}
+                </span>
+                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {opt.label}
+                  {opt.count !== undefined && (
+                    <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.7 }}>({opt.count})</span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
