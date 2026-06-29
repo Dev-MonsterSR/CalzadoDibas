@@ -6,7 +6,13 @@ export const Product = {
     const values = [];
 
     if (category) {
-      conditions.push('c.slug = ?');
+      // Acepta tanto el slug (string) como el ID (numero)
+      // Si es numerico, filtra por c.id; si no, por c.slug
+      if (/^\d+$/.test(category)) {
+        conditions.push('c.id = ?');
+      } else {
+        conditions.push('c.slug = ?');
+      }
       values.push(category);
     }
     if (material) {

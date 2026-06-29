@@ -229,6 +229,18 @@ input, select, textarea {
     padding: 24px 16px !important;
     min-height: auto !important;
   }
+  /* Catalog: sidebar arriba en mobile, grid abajo */
+  .catalog-sidebar {
+    width: 100% !important;
+    position: static !important;
+    max-height: none !important;
+  }
+  .catalog-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+  }
+  .catalog-load-more {
+    width: 100% !important;
+  }
 }
 
 @media (max-width: 480px) {
