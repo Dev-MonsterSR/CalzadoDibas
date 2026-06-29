@@ -109,14 +109,20 @@ export default function AdminProducts() {
   if (loading) return <p style={{ textAlign: 'center', padding: 80, color: 'var(--text-muted)' }}>Cargando...</p>;
 
   return (
-    <section style={{ padding: '48px 0' }}>
+    <section className="admin-page" style={{ padding: '32px 0' }}>
       <div className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
-          <div>
-            <Link to="/admin" style={{ color: 'var(--text-muted)', fontSize: 14 }}>← Dashboard</Link>
-            <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 700, marginTop: 8 }}>Gestión de Productos</h1>
+        <div className="admin-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Link to="/admin" className="admin-back-link" style={{ color: 'var(--text-muted)', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_back</span>
+              Dashboard
+            </Link>
+            <h1 className="admin-page-title" style={{ color: '#fff', fontSize: 24, fontWeight: 700, lineHeight: 1.2 }}>Gestión de Productos</h1>
           </div>
-          <button onClick={openCreate} style={{ background: 'var(--primary-container)', color: '#000', padding: '10px 20px', borderRadius: 'var(--radius)', fontWeight: 600, border: 'none', cursor: 'pointer' }}>+ Nuevo Producto</button>
+          <button onClick={openCreate} className="admin-new-btn" style={{ background: 'var(--primary-container)', color: '#000', padding: '8px 16px', borderRadius: 'var(--radius)', fontWeight: 700, fontSize: 13, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
+            Nuevo Producto
+          </button>
         </div>
 
         {/* Form Modal (flotante con overlay) */}

@@ -295,6 +295,32 @@ input, select, textarea {
     height: 28px !important;
     font-size: 10px !important;
   }
+  /* Admin: header mas compacto y boton full-width en mobile */
+  .admin-page {
+    padding: 16px 0 24px !important;
+  }
+  .admin-page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .admin-page-title {
+    font-size: 20px !important;
+  }
+  .admin-back-link {
+    font-size: 12px !important;
+  }
+  .admin-new-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+  }
+  /* Grid de cards admin: mas compacto en mobile */
+  .container div[style*="gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))'"],
+  .container div[style*="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))"] {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @media (max-width: 480px) {
