@@ -119,13 +119,22 @@ export default function AdminProducts() {
           <button onClick={openCreate} style={{ background: 'var(--primary-container)', color: '#000', padding: '10px 20px', borderRadius: 'var(--radius)', fontWeight: 600, border: 'none', cursor: 'pointer' }}>+ Nuevo Producto</button>
         </div>
 
-        {/* Form Modal */}
+        {/* Form Modal (flotante con overlay) */}
         {showForm && (
-          <form onSubmit={handleSubmit} style={{
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+            onClick={closeForm}
+          >
+          <form onSubmit={(e) => { e.stopPropagation(); handleSubmit(e); }} onClick={(e) => e.stopPropagation()} style={{
             background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)',
-            padding: 28, marginBottom: 24, border: '1px solid var(--outline-variant)', color: 'var(--text-secondary)',
+            padding: 28, maxWidth: 800, width: '100%', maxHeight: '90vh', overflowY: 'auto',
+            border: '1px solid var(--outline-variant)', color: 'var(--text-secondary)',
           }}>
-            <h2 style={{ color: '#fff', fontSize: 20, marginBottom: 20 }}>{editId ? 'Editar Producto' : 'Nuevo Producto'}</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h2 style={{ color: '#fff', fontSize: 20 }}>{editId ? 'Editar Producto' : 'Nuevo Producto'}</h2>
+              <button type="button" onClick={closeForm} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 24, lineHeight: 1 }}>×</button>
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Nombre *</label>
@@ -228,6 +237,7 @@ export default function AdminProducts() {
               <button type="button" onClick={closeForm} style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)', padding: '10px 24px', borderRadius: 'var(--radius)', border: '1px solid var(--outline-variant)', cursor: 'pointer' }}>Cancelar</button>
             </div>
           </form>
+          </div>
         )}
 
         {/* Grid de cards con imagenes */}

@@ -504,8 +504,18 @@ export async function listAdminProducts(req, res, next) {
     const safeLimit = Math.min(parseInt(limit) || 20, 100);
     const safeOffset = ((parseInt(page) || 1) - 1) * safeLimit;
 
+    // Seleccion p.* + categoria + imagenes agregadas como JSON array
+    // MySQL 8 no soporta ORDER BY dentro de JSON_ARRAYAGG(JSON_OBJECT(...)),
+    // asi que ordenamos por position y is_primary DESPUES en JavaScript.
     const [rows] = await pool.execute(
-      `SELECT p.*, c.name as category_name, c.slug as category_slug
+      `SELECT p.id, p.category_id, p.name, p.description, p.price_retail, p.price_wholesale,
+              p.code, p.material, p.brand, p.is_active, p.created_at,
+              c.name as category_name, c.slug as category_slug,
+              (SELECT JSON_ARRAYAGG(
+                 JSON_OBJECT('id', pi.id, 'image_url', pi.image_url, 'is_primary', pi.is_primary, 'position', pi.position)
+               )
+               FROM product_images pi WHERE pi.product_id = p.id
+              ) as images
        FROM products p
        LEFT JOIN categories c ON p.category_id = c.id
        ${whereClause}
@@ -513,6 +523,25 @@ export async function listAdminProducts(req, res, next) {
        LIMIT ${safeLimit} OFFSET ${safeOffset}`,
       values
     );
+
+    // Parsear el JSON string de images a array y ordenar (primary primero)
+    for (const row of rows) {
+      if (row.images && typeof row.images === 'string') {
+        try {
+          row.images = JSON.parse(row.images);
+          // Ordenar: primary primero, despues por position
+          if (Array.isArray(row.images)) {
+            row.images.sort((a, b) => {
+              if (a.is_primary && !b.is_primary) return -1;
+              if (!a.is_primary && b.is_primary) return 1;
+              return (a.position || 0) - (b.position || 0);
+            });
+          }
+        } catch { row.images = []; }
+      } else if (!row.images) {
+        row.images = [];
+      }
+    }
 
     res.json({ products: rows, total, page: parseInt(page) || 1, limit: safeLimit });
   } catch (err) {
