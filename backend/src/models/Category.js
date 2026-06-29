@@ -17,17 +17,20 @@ export const Category = {
   },
 
   async create({ name, slug, description }) {
+    // La tabla categories no tiene columna 'description' en este schema
+    // (solo: id, name, slug, created_at). Ignoramos description.
     const [result] = await pool.execute(
-      'INSERT INTO categories (name, slug, description) VALUES (?, ?, ?)',
-      [name, slug, description || '']
+      'INSERT INTO categories (name, slug) VALUES (?, ?)',
+      [name, slug]
     );
     return result.insertId;
   },
 
   async update(id, { name, slug, description }) {
+    // La tabla categories no tiene columna 'description' en este schema.
     await pool.execute(
-      'UPDATE categories SET name = ?, slug = ?, description = COALESCE(?, description) WHERE id = ?',
-      [name, slug, description, id]
+      'UPDATE categories SET name = ?, slug = ? WHERE id = ?',
+      [name, slug, id]
     );
     return this.findById(id);
   },
