@@ -58,6 +58,44 @@ export async function getDashboard(req, res, next) {
        ORDER BY month ASC`
     );
 
+    // Sales by warehouse (Trujillo vs Lima)
+    const [salesByWarehouse] = await pool.execute(
+      `SELECT delivery_location, COUNT(*) as orders, COALESCE(SUM(total), 0) as revenue
+       FROM orders
+       WHERE status != 'cancelado' AND delivery_location IS NOT NULL
+       GROUP BY delivery_location`
+    );
+
+    // Daily sales (last 7 days) - includes days with 0 sales
+    const [dailySalesRaw] = await pool.execute(
+      `SELECT DATE(created_at) as day, COUNT(*) as orders, COALESCE(SUM(total), 0) as revenue
+       FROM orders
+       WHERE status != 'cancelado' AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+       GROUP BY DATE(created_at)
+       ORDER BY day ASC`
+    );
+    // Fill in missing days with 0
+    const dailySales = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const found = dailySalesRaw.find(r => r.day && r.day.toISOString().split('T')[0] === dateStr);
+      dailySales.push({
+        day: dateStr,
+        orders: found ? found.orders : 0,
+        revenue: found ? parseFloat(found.revenue) : 0,
+      });
+    }
+
+    // Orders by warehouse (preparando/listo_recojo/entregado counts)
+    const [ordersByWarehouse] = await pool.execute(
+      `SELECT delivery_location, status, COUNT(*) as count
+       FROM orders
+       WHERE delivery_location IS NOT NULL AND status IN ('pagado', 'preparando', 'listo_recojo', 'entregado')
+       GROUP BY delivery_location, status`
+    );
+
     res.json({
       total_orders: salesRows[0].total_orders,
       total_revenue: parseFloat(salesRows[0].total_revenue),
@@ -68,7 +106,10 @@ export async function getDashboard(req, res, next) {
       top_sellers: topSellers,
       low_stock: lowStock,
       status_breakdown: statusBreakdown,
-      monthly_sales: monthlySales
+      monthly_sales: monthlySales,
+      sales_by_warehouse: salesByWarehouse,
+      daily_sales: dailySales,
+      orders_by_warehouse: ordersByWarehouse,
     });
   } catch (err) {
     next(err);
