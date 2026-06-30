@@ -128,6 +128,7 @@ function MiniBar({ value, max, color = 'var(--primary-container)' }) {
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [salesRange, setSalesRange] = useState('1m');
 
   useEffect(() => {
     adminService.dashboard().then(res => setStats(res.data)).finally(() => setLoading(false));
@@ -163,6 +164,7 @@ export default function AdminDashboard() {
   const groupedLowStock = Object.values(lowStockByProduct).slice(0, 5);
 
   // === Selector de rango de tiempo para el grafico de ventas ===
+  // State declarado ARRIBA del early return (regla de React: hooks en el mismo orden)
   const RANGE_OPTIONS = [
     { value: '7d', label: '7 dias' },
     { value: '1m', label: '1 mes' },
@@ -170,7 +172,6 @@ export default function AdminDashboard() {
     { value: '6m', label: '6 meses' },
     { value: '1y', label: '1 ano' },
   ];
-  const [salesRange, setSalesRange] = useState('1m');
 
   // Calcular datos segun el rango
   const getSalesChartData = () => {
