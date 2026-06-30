@@ -101,43 +101,66 @@ export async function getDashboard(req, res, next) {
       });
     }
 
-    // Weekly sales (last 7 days, aggregated by week)
-    // Bi-weekly: ultimas 2 semanas
-    const [biweeklySalesRaw] = await pool.execute(
+    // Weekly sales (ultimas 4 semanas, agregadas por semana)
+    const [weeklySalesRaw] = await pool.execute(
       `SELECT DATE(created_at) as day, COUNT(*) as orders, COALESCE(SUM(total), 0) as revenue
        FROM orders
-       WHERE status != 'cancelado' AND created_at >= DATE_SUB(CURDATE(), INTERVAL 13 DAY)
+       WHERE status != 'cancelado' AND created_at >= DATE_SUB(CURDATE(), INTERVAL 27 DAY)
        GROUP BY DATE(created_at)
        ORDER BY day ASC`
     );
-    // Agrupar por bimestre (semana 1: ultimos 7 dias, semana 2: 8-14 dias atras)
-    const biweeklySales = [];
+    // Agrupar en 4 semanas
+    const weeklySales = [];
     const now = new Date();
-    for (let weekOffset = 1; weekOffset >= 0; weekOffset--) {
+    for (let weekOffset = 3; weekOffset >= 0; weekOffset--) {
       let weekOrders = 0;
       let weekRevenue = 0;
-      const label = weekOffset === 0 ? 'Esta semana' : 'Semana pasada';
+      let weekStart = null;
       for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
         const target = new Date(now);
         target.setDate(target.getDate() - (weekOffset * 7 + dayOffset));
         const targetStr = toDateStr(target);
-        const found = biweeklySalesRaw.find(r => r.day && formatRowDay(r.day) === targetStr);
+        if (weekStart === null) weekStart = target;
+        const found = weeklySalesRaw.find(r => r.day && formatRowDay(r.day) === targetStr);
         if (found) {
           weekOrders += found.orders;
           weekRevenue += parseFloat(found.revenue);
         }
       }
-      biweeklySales.push({ label, orders: weekOrders, revenue: weekRevenue });
+      // Label: numero de semana del mes o fecha
+      const monthShort = weekStart.toLocaleDateString('es-PE', { month: 'short' });
+      const day = weekStart.getDate();
+      weeklySales.push({
+        label: `${day} ${monthShort}`,
+        orders: weekOrders,
+        revenue: weekRevenue,
+      });
     }
 
-    // Monthly sales (last 12 months, por mes) - reutilizar monthly_sales pero extender a 12
-    const [yearlySalesRaw] = await pool.execute(
+    // Yearly sales (ultimos 12 meses, agregados por mes) - rellena con 0 los meses sin ventas
+    const [yearlySalesRaw2] = await pool.execute(
       `SELECT DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as orders, COALESCE(SUM(total), 0) as revenue
        FROM orders
        WHERE status != 'cancelado' AND created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
        ORDER BY month ASC`
     );
+    // Rellenar 12 meses (rellenar con 0 los meses sin ventas)
+    const yearlySales = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const monthKey = `${yyyy}-${mm}`;
+      const found = yearlySalesRaw2.find(r => r.month === monthKey);
+      yearlySales.push({
+        month: monthKey,
+        label: d.toLocaleDateString('es-PE', { month: 'short' }),
+        orders: found ? found.orders : 0,
+        revenue: found ? parseFloat(found.revenue) : 0,
+      });
+    }
 
     // Orders by warehouse (preparando/listo_recojo/entregado counts)
     const [ordersByWarehouse] = await pool.execute(
@@ -160,8 +183,8 @@ export async function getDashboard(req, res, next) {
       monthly_sales: monthlySales,
       sales_by_warehouse: salesByWarehouse,
       daily_sales: dailySales,
-      biweekly_sales: biweeklySales,
-      yearly_sales: yearlySalesRaw,
+      weekly_sales: weeklySales,
+      yearly_sales: yearlySales,
       orders_by_warehouse: ordersByWarehouse,
     });
   } catch (err) {

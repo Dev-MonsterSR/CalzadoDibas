@@ -52,27 +52,66 @@ function DonutChart({ data, size = 160 }) {
   );
 }
 
-function BarChart({ data, height = 160 }) {
+function BarChart({ data, height = 180 }) {
   // data: [{label, value, color?}]
+  if (!data || data.length === 0) return null;
   const max = Math.max(...data.map(d => d.value), 1);
-  const barWidth = 100 / data.length; // %
+  const w = Math.max(360, data.length * 50);  // ancho minimo 360, 50px por barra
+  const h = height;
+  const padding = { top: 30, right: 20, bottom: 30, left: 50 };
+  const chartW = w - padding.left - padding.right;
+  const chartH = h - padding.top - padding.bottom;
+  const barWidth = Math.min(30, (chartW / data.length) * 0.7);
+  const slot = chartW / data.length;
+
+  // 4 lineas de grid horizontales
+  const gridLines = [0, 0.25, 0.5, 0.75, 1].map(pct => ({
+    y: padding.top + chartH * (1 - pct),
+    value: max * pct,
+  }));
+
   return (
-    <div style={{ height, position: 'relative' }}>
-      <svg width="100%" height={height} preserveAspectRatio="none" viewBox={`0 0 ${data.length * 10} 100`} style={{ width: '100%', height: '100%' }}>
+    <div style={{ position: 'relative', height: h, width: '100%', overflow: 'hidden' }}>
+      <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%' }}>
+        <defs>
+          <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--primary-container)" stopOpacity="1" />
+            <stop offset="100%" stopColor="var(--primary-container)" stopOpacity="0.4" />
+          </linearGradient>
+        </defs>
+        {/* Grid lines horizontales */}
+        {gridLines.map((g, i) => (
+          <g key={i}>
+            <line x1={padding.left} y1={g.y} x2={w - padding.right} y2={g.y} stroke="var(--outline-variant)" strokeWidth="0.5" strokeDasharray={i === 0 ? '0' : '2,2'} opacity="0.4" />
+            <text x={padding.left - 6} y={g.y + 3} textAnchor="end" fill="var(--text-muted)" fontSize="9" fontFamily="monospace">
+              {g.value === 0 ? '0' : g.value >= 1000 ? `${(g.value / 1000).toFixed(1)}k` : g.value.toFixed(0)}
+            </text>
+          </g>
+        ))}
+        {/* Barras */}
         {data.map((d, i) => {
-          const h = (d.value / max) * 80;
+          const barH = (d.value / max) * chartH;
+          const x = padding.left + slot * i + (slot - barWidth) / 2;
+          const y = padding.top + chartH - barH;
           return (
             <g key={i}>
-              <rect x={i * 10 + 1} y={90 - h} width={8} height={h} fill={d.color || 'var(--primary-container)'} rx={1} />
+              <rect x={x} y={y} width={barWidth} height={barH} fill="url(#barGrad)" rx={2} />
+              {/* Valor encima de la barra (solo si es >0) */}
+              {d.value > 0 && (
+                <text x={x + barWidth / 2} y={y - 4} textAnchor="middle" fill="var(--text-secondary)" fontSize="9" fontWeight="600" fontFamily="monospace">
+                  {d.value >= 1000 ? `${(d.value / 1000).toFixed(1)}k` : d.value.toFixed(0)}
+                </text>
+              )}
+              {/* Label debajo */}
+              <text x={x + barWidth / 2} y={h - 10} textAnchor="middle" fill="var(--text-muted)" fontSize="10">
+                {d.label}
+              </text>
             </g>
           );
         })}
+        {/* Eje X (linea base) */}
+        <line x1={padding.left} y1={padding.top + chartH} x2={w - padding.right} y2={padding.top + chartH} stroke="var(--outline-variant)" strokeWidth="1" />
       </svg>
-      <div style={{ position: 'absolute', bottom: -18, left: 0, right: 0, display: 'flex', justifyContent: 'space-around', fontSize: 10, color: 'var(--text-muted)' }}>
-        {data.map((d, i) => (
-          <span key={i} style={{ flex: 1, textAlign: 'center' }}>{d.label}</span>
-        ))}
-      </div>
     </div>
   );
 }
@@ -176,15 +215,15 @@ export default function AdminDashboard() {
   // Calcular datos segun el rango
   const getSalesChartData = () => {
     if (salesRange === '7d') {
-      // Ultimos 7 dias (diario)
+      // Ultimos 7 dias (diario) - 7 puntos
       return (stats?.daily_sales || []).map(d => ({
         label: new Date(d.day).toLocaleDateString('es-PE', { weekday: 'short' }).slice(0, 3),
         value: parseFloat(d.revenue || 0),
         orders: d.orders || 0,
       }));
     } else if (salesRange === '1m') {
-      // Ultimas 2 semanas (bi-semanal)
-      return (stats?.biweekly_sales || []).map(w => ({
+      // Ultimas 4 semanas - 4 puntos (semana por semana)
+      return (stats?.weekly_sales || []).map(w => ({
         label: w.label,
         value: parseFloat(w.revenue || 0),
         orders: w.orders || 0,
@@ -197,9 +236,9 @@ export default function AdminDashboard() {
         orders: m.orders || 0,
       }));
     } else if (salesRange === '1y') {
-      // Por mes, ultimos 12 meses
+      // Por mes, ultimos 12 meses (12 puntos)
       return (stats?.yearly_sales || []).map(m => ({
-        label: m.month,
+        label: m.label,
         value: parseFloat(m.revenue || 0),
         orders: m.orders || 0,
       }));
@@ -352,7 +391,7 @@ export default function AdminDashboard() {
               Sin ventas en este rango
             </p>
           ) : (
-            <LineChart data={dailyChart} />
+            <BarChart data={dailyChart} height={180} />
           )}
         </Card>
 
