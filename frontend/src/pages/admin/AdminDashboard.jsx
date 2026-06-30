@@ -116,36 +116,70 @@ function BarChart({ data, height = 180 }) {
   );
 }
 
-function LineChart({ data, height = 160 }) {
+function LineChart({ data, height = 180 }) {
   // data: [{label, value}]
+  if (!data || data.length === 0) return null;
   const max = Math.max(...data.map(d => d.value), 1);
-  const w = data.length * 60;
+  const w = Math.max(360, data.length * 50);
   const h = height;
+  const padding = { top: 20, right: 20, bottom: 30, left: 50 };
+  const chartW = w - padding.left - padding.right;
+  const chartH = h - padding.top - padding.bottom;
+  const slot = chartW / Math.max(1, data.length - 1);
   const points = data.map((d, i) => ({
-    x: (i / (data.length - 1 || 1)) * (w - 40) + 20,
-    y: h - 30 - (d.value / max) * (h - 60),
+    x: padding.left + slot * i,
+    y: padding.top + chartH - (d.value / max) * chartH,
     value: d.value,
     label: d.label,
   }));
 
   const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-  const areaD = `${pathD} L ${points[points.length - 1].x} ${h - 20} L ${points[0].x} ${h - 20} Z`;
+  const areaD = `${pathD} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
+
+  // Grid lines horizontales (5 lineas: 0, 25, 50, 75, 100%)
+  const gridLines = [0, 0.25, 0.5, 0.75, 1].map(pct => ({
+    y: padding.top + chartH * (1 - pct),
+    value: max * pct,
+  }));
 
   return (
-    <div style={{ position: 'relative', height: h + 20, marginBottom: 8 }}>
-      <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height }}>
+    <div style={{ position: 'relative', height: h, width: '100%', overflow: 'hidden' }}>
+      <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%' }}>
         <defs>
           <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--primary-container)" stopOpacity="0.4" />
+            <stop offset="0%" stopColor="var(--primary-container)" stopOpacity="0.35" />
             <stop offset="100%" stopColor="var(--primary-container)" stopOpacity="0" />
           </linearGradient>
         </defs>
+        {/* Grid lines horizontales */}
+        {gridLines.map((g, i) => (
+          <g key={i}>
+            <line x1={padding.left} y1={g.y} x2={w - padding.right} y2={g.y} stroke="var(--outline-variant)" strokeWidth="0.5" strokeDasharray={i === 0 ? '0' : '2,2'} opacity="0.4" />
+            <text x={padding.left - 6} y={g.y + 3} textAnchor="end" fill="var(--text-muted)" fontSize="9" fontFamily="monospace">
+              {g.value === 0 ? '0' : g.value >= 1000 ? `${(g.value / 1000).toFixed(1)}k` : g.value.toFixed(0)}
+            </text>
+          </g>
+        ))}
+        {/* Area debajo de la linea */}
         <path d={areaD} fill="url(#lineGrad)" />
-        <path d={pathD} fill="none" stroke="var(--primary-container)" strokeWidth="2" />
+        {/* Linea */}
+        <path d={pathD} fill="none" stroke="var(--primary-container)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        {/* Puntos y labels */}
         {points.map((p, i) => (
           <g key={i}>
-            <circle cx={p.x} cy={p.y} r="3" fill="var(--primary-container)" />
-            <text x={p.x} y={h - 5} textAnchor="middle" fill="var(--text-muted)" fontSize="9">{p.label}</text>
+            {/* Halo blanco para que el punto resalte */}
+            <circle cx={p.x} cy={p.y} r="5" fill="var(--bg-secondary)" />
+            <circle cx={p.x} cy={p.y} r="3.5" fill="var(--primary-container)" />
+            {/* Valor encima del punto (solo si es >0) */}
+            {p.value > 0 && (
+              <text x={p.x} y={p.y - 10} textAnchor="middle" fill="var(--text-secondary)" fontSize="9" fontWeight="600" fontFamily="monospace">
+                {p.value >= 1000 ? `${(p.value / 1000).toFixed(1)}k` : p.value.toFixed(0)}
+              </text>
+            )}
+            {/* Label debajo */}
+            <text x={p.x} y={h - 8} textAnchor="middle" fill="var(--text-muted)" fontSize="10">
+              {p.label}
+            </text>
           </g>
         ))}
       </svg>
@@ -391,7 +425,7 @@ export default function AdminDashboard() {
               Sin ventas en este rango
             </p>
           ) : (
-            <BarChart data={dailyChart} height={180} />
+            <LineChart data={dailyChart} height={180} />
           )}
         </Card>
 
