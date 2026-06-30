@@ -143,11 +143,13 @@ export default function AdminDashboard() {
   // === Calculos para los widgets ===
   const topSellers = stats?.top_sellers?.slice(0, 5) || [];
   const maxTopSeller = Math.max(...topSellers.map(s => parseFloat(s.total_sold || 0)), 1);
-  const lowStock = stats?.low_stock?.slice(0, 5) || [];
+
+  // Filtrar stock bajo: solo mostrar tiendas (no fabrica)
+  const lowStockFiltered = (stats?.low_stock || []).filter(item => item.warehouse !== 'fabrica');
 
   // Agrupar stock bajo por producto (un producto puede tener stock bajo en varias sedes)
   const lowStockByProduct = {};
-  for (const item of stats?.low_stock || []) {
+  for (const item of lowStockFiltered) {
     if (!lowStockByProduct[item.product_id]) {
       lowStockByProduct[item.product_id] = {
         product_id: item.product_id,
@@ -160,17 +162,52 @@ export default function AdminDashboard() {
   }
   const groupedLowStock = Object.values(lowStockByProduct).slice(0, 5);
 
-  // Mapeo de codigo de sede a nombre legible
-  const WAREHOUSE_LABELS = {
-    fabrica: { name: 'Fabrica', icon: 'factory' },
-    tienda_trujillo: { name: 'Trujillo', icon: 'storefront' },
-    tienda_lima: { name: 'Lima', icon: 'storefront' },
+  // === Selector de rango de tiempo para el grafico de ventas ===
+  const RANGE_OPTIONS = [
+    { value: '7d', label: '7 dias' },
+    { value: '1m', label: '1 mes' },
+    { value: '3m', label: '3 meses' },
+    { value: '6m', label: '6 meses' },
+    { value: '1y', label: '1 ano' },
+  ];
+  const [salesRange, setSalesRange] = useState('1m');
+
+  // Calcular datos segun el rango
+  const getSalesChartData = () => {
+    if (salesRange === '7d') {
+      // Ultimos 7 dias (diario)
+      return (stats?.daily_sales || []).map(d => ({
+        label: new Date(d.day).toLocaleDateString('es-PE', { weekday: 'short' }).slice(0, 3),
+        value: parseFloat(d.revenue || 0),
+        orders: d.orders || 0,
+      }));
+    } else if (salesRange === '1m') {
+      // Ultimas 2 semanas (bi-semanal)
+      return (stats?.biweekly_sales || []).map(w => ({
+        label: w.label,
+        value: parseFloat(w.revenue || 0),
+        orders: w.orders || 0,
+      }));
+    } else if (salesRange === '3m' || salesRange === '6m') {
+      // Por mes, ultimos 6 meses
+      return (stats?.monthly_sales || []).map(m => ({
+        label: m.month,
+        value: parseFloat(m.revenue || 0),
+        orders: m.orders || 0,
+      }));
+    } else if (salesRange === '1y') {
+      // Por mes, ultimos 12 meses
+      return (stats?.yearly_sales || []).map(m => ({
+        label: m.month,
+        value: parseFloat(m.revenue || 0),
+        orders: m.orders || 0,
+      }));
+    }
+    return [];
   };
-  const WAREHOUSE_COLORS = {
-    fabrica: '#8b5cf6',
-    tienda_trujillo: '#f59e0b',
-    tienda_lima: '#3b82f6',
-  };
+  const dailyChart = getSalesChartData();
+  const totalRange = dailyChart.reduce((s, d) => s + d.value, 0);
+  const ordersRange = dailyChart.reduce((s, d) => s + d.orders, 0);
 
   // Status breakdown
   const statusBreakdown = (stats?.status_breakdown || []).reduce((acc, s) => {
@@ -202,11 +239,8 @@ export default function AdminDashboard() {
       color: ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'][i] || '#6b7280',
     }));
 
-  // Line chart: ventas ultimos 7 dias
-  const dailyChart = (stats?.daily_sales || []).map(d => ({
-    label: new Date(d.day).toLocaleDateString('es-PE', { weekday: 'short' }).slice(0, 3),
-    value: parseFloat(d.revenue || 0),
-  }));
+  // Line chart: ventas (calculado arriba segun el rango seleccionado)
+  // const dailyChart eliminado - ya se calcula en getSalesChartData()
 
   // Bar chart: pedidos por status
   const statusBar = Object.entries(statusBreakdown)
@@ -286,12 +320,39 @@ export default function AdminDashboard() {
 
       {/* Fila 1: Ventas 7 dias + Ventas por sede */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
-        <Card title="Ventas ultimos 7 dias" icon="trending_up" action={
-          <span style={{ color: 'var(--text-muted)', fontSize: 11, fontFamily: 'monospace' }}>
-            S/ {dailyChart.reduce((s, d) => s + d.value, 0).toFixed(2)}
-          </span>
+        <Card title="Ventas" icon="trending_up" action={
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {RANGE_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setSalesRange(opt.value)}
+                style={{
+                  background: salesRange === opt.value ? 'var(--primary-container)' : 'var(--bg-tertiary)',
+                  color: salesRange === opt.value ? '#000' : 'var(--text-muted)',
+                  border: 'none',
+                  padding: '4px 8px', borderRadius: 'var(--radius-sm)',
+                  fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >{opt.label}</button>
+            ))}
+          </div>
         }>
-          <LineChart data={dailyChart} />
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
+            <span style={{ color: '#fff', fontSize: 20, fontWeight: 700, fontFamily: 'monospace' }}>
+              S/ {totalRange.toFixed(2)}
+            </span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
+              {ordersRange} pedido{ordersRange !== 1 ? 's' : ''}
+            </span>
+          </div>
+          {dailyChart.length === 0 || totalRange === 0 ? (
+            <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 32 }}>
+              Sin ventas en este rango
+            </p>
+          ) : (
+            <LineChart data={dailyChart} />
+          )}
         </Card>
 
         <Card title="Pedidos por sede" icon="store">
@@ -336,7 +397,7 @@ export default function AdminDashboard() {
         <Card title="Stock bajo" icon="warning" action={
           groupedLowStock.length > 0 ? (
             <span style={{ background: 'var(--error-container)', color: 'var(--error)', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-sm)' }}>
-              {stats?.low_stock?.length || 0}
+              {lowStockFiltered.length}
             </span>
           ) : null
         }>
