@@ -126,44 +126,63 @@ export default function QRScanner({ isOpen, onClose, onScan }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-      <div className="bg-surface-container rounded-xl max-w-md w-full p-6 relative">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{
+        background: 'rgba(0,0,0,0.75)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+      }}
+    >
+      <div
+        className="rounded-xl max-w-md w-full p-6 relative"
+        style={{
+          background: 'rgba(24, 24, 27, 0.85)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        }}
+      >
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface transition-colors"
+          className="absolute top-4 right-4 hover:opacity-70 transition-opacity"
+          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
         >
           <span className="material-symbols-outlined">close</span>
         </button>
 
         {/* Title */}
-        <h2 className="font-title-md text-title-md text-on-surface mb-6">
-          Escanear Código QR
+        <h2 style={{ color: '#fff', fontSize: 20, fontWeight: 700, marginBottom: 24 }}>
+          Escanear Codigo QR
         </h2>
 
         {/* Mode toggle */}
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setMode('camera')}
-            className={`flex-1 py-2 px-4 rounded-lg font-label-md transition-all ${
-              mode === 'camera'
-                ? 'bg-primary-container text-on-primary-container'
-                : 'bg-surface-variant/30 text-on-surface-variant hover:bg-surface-variant/50'
-            }`}
+            className="flex-1 py-2 px-4 rounded-lg font-bold text-sm transition-all"
+            style={{
+              background: mode === 'camera' ? 'var(--primary-container)' : 'rgba(255,255,255,0.08)',
+              color: mode === 'camera' ? '#000' : 'var(--text-muted)',
+              border: 'none', cursor: 'pointer',
+            }}
           >
             <span className="material-symbols-outlined text-sm mr-2">photo_camera</span>
-            Cámara
+            Camara
           </button>
           <button
             onClick={() => {
               setMode('manual');
               stopCamera();
             }}
-            className={`flex-1 py-2 px-4 rounded-lg font-label-md transition-all ${
-              mode === 'manual'
-                ? 'bg-primary-container text-on-primary-container'
-                : 'bg-surface-variant/30 text-on-surface-variant hover:bg-surface-variant/50'
-            }`}
+            className="flex-1 py-2 px-4 rounded-lg font-bold text-sm transition-all"
+            style={{
+              background: mode === 'manual' ? 'var(--primary-container)' : 'rgba(255,255,255,0.08)',
+              color: mode === 'manual' ? '#000' : 'var(--text-muted)',
+              border: 'none', cursor: 'pointer',
+            }}
           >
             <span className="material-symbols-outlined text-sm mr-2">keyboard</span>
             Manual
@@ -196,30 +215,40 @@ export default function QRScanner({ isOpen, onClose, onScan }) {
         {mode === 'manual' && (
           <form onSubmit={handleManualSubmit} className="space-y-4">
             <div>
-              <label className="block text-on-surface-variant text-sm mb-2">
-                Ingresa el código del pedido
+              <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: 13, marginBottom: 8, fontWeight: 500 }}>
+                Ingresa el codigo del pedido
               </label>
               <input
                 type="text"
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
                 placeholder="#000022 o escanea el QR"
-                className="w-full bg-surface-variant/30 border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface focus:ring-primary focus:border-primary"
                 autoFocus
+                style={{
+                  width: '100%', padding: '12px 14px',
+                  background: 'var(--bg-dark)', border: '1px solid var(--outline-variant)',
+                  borderRadius: 'var(--radius)', color: 'var(--text-primary)',
+                  fontSize: 15, outline: 'none', boxSizing: 'border-box',
+                }}
               />
-              <p className="text-on-surface-variant text-xs mt-2">
-                Pide al cliente su código de pedido (ej. <strong>#000022</strong>) o escanea su QR
+              <p style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 6 }}>
+                Pide al cliente su codigo de pedido (ej. <strong style={{ color: 'var(--text-secondary)' }}>#000022</strong>) o escanea su QR
               </p>
             </div>
             {error && (
-              <div className="bg-error-container/20 border border-error rounded-lg p-3 text-error text-sm flex items-center gap-2">
-                <span className="material-symbols-outlined text-sm">error</span>
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error)',
+                borderRadius: 'var(--radius)', padding: 12, color: 'var(--error)',
+                fontSize: 13, display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>error</span>
                 {error}
               </div>
             )}
             <button
               type="submit"
-              className="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-label-md hover:brightness-110 active:scale-95 transition-all"
+              className="w-full py-3 rounded-lg font-bold text-sm transition-all hover:brightness-110 active:scale-95"
+              style={{ background: 'var(--primary-container)', color: '#000', border: 'none', cursor: 'pointer' }}
             >
               Confirmar Entrega
             </button>
