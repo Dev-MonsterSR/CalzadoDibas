@@ -185,32 +185,40 @@ export default function AdjustStockModal({ isOpen, onClose, inventoryItem, onSuc
             <label className="block text-sm font-label-md text-on-surface mb-3">
               Tipo de Ajuste <span className="text-error">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <button
                 type="button"
                 onClick={() => setAdjustmentType('add')}
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  isAdd
-                    ? 'border-green-500 bg-green-500/10 text-green-500'
-                    : 'border-outline-variant/30 bg-surface-variant/30 text-on-surface hover:border-green-500/50'
-                }`}
+                className="transition-all hover:brightness-110"
+                style={{
+                  padding: 20, borderRadius: 12,
+                  border: isAdd ? '2px solid #c8a96e' : '1px solid rgba(255,255,255,0.08)',
+                  background: isAdd ? 'rgba(200, 169, 110, 0.12)' : 'rgba(255,255,255,0.04)',
+                  color: isAdd ? '#c8a96e' : '#a1a1aa',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                }}
               >
-                <span className="material-symbols-outlined text-2xl mb-1">add_circle</span>
-                <div className="font-label-md">Agregar Stock</div>
-                <div className="text-xs opacity-70 mt-1">Entrada de mercadería</div>
+                <span className="material-symbols-outlined" style={{ fontSize: 28, marginBottom: 4, display: 'block', color: isAdd ? '#c8a96e' : '#71717a' }}>add_circle</span>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>Agregar Stock</div>
+                <div style={{ fontSize: 11, opacity: 0.7, marginTop: 4 }}>Entrada de mercaderia</div>
               </button>
               <button
                 type="button"
                 onClick={() => setAdjustmentType('subtract')}
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  !isAdd
-                    ? 'border-error bg-error/10 text-error'
-                    : 'border-outline-variant/30 bg-surface-variant/30 text-on-surface hover:border-error/50'
-                }`}
+                className="transition-all hover:brightness-110"
+                style={{
+                  padding: 20, borderRadius: 12,
+                  border: !isAdd ? '2px solid #ef4444' : '1px solid rgba(255,255,255,0.08)',
+                  background: !isAdd ? 'rgba(239, 68, 68, 0.12)' : 'rgba(255,255,255,0.04)',
+                  color: !isAdd ? '#ef4444' : '#a1a1aa',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                }}
               >
-                <span className="material-symbols-outlined text-2xl mb-1">remove_circle</span>
-                <div className="font-label-md">Retirar Stock</div>
-                <div className="text-xs opacity-70 mt-1">Salida de mercadería</div>
+                <span className="material-symbols-outlined" style={{ fontSize: 28, marginBottom: 4, display: 'block', color: !isAdd ? '#ef4444' : '#71717a' }}>remove_circle</span>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>Retirar Stock</div>
+                <div style={{ fontSize: 11, opacity: 0.7, marginTop: 4 }}>Salida de mercaderia</div>
               </button>
             </div>
           </div>
@@ -231,7 +239,7 @@ export default function AdjustStockModal({ isOpen, onClose, inventoryItem, onSuc
                 </button>
               </div>
             </div>
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {ALL_SIZES.map(s => {
                 const current = currentStockBySize[s] || 0;
                 const qty = quantities[s] || 0;
@@ -240,35 +248,52 @@ export default function AdjustStockModal({ isOpen, onClose, inventoryItem, onSuc
                 return (
                   <div
                     key={s}
-                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
-                      isActive
-                        ? wouldBeNegative
-                          ? 'border-error bg-error/10'
-                          : isAdd
-                            ? 'border-green-500 bg-green-500/10'
-                            : 'border-error bg-error/10'
-                        : 'border-outline-variant/30 bg-surface-variant/20'
-                    }`}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 10,
+                      border: isActive
+                        ? (wouldBeNegative || !isAdd)
+                          ? '1px solid rgba(239, 68, 68, 0.4)'
+                          : '1px solid rgba(200, 169, 110, 0.4)'
+                        : '1px solid rgba(255,255,255,0.06)',
+                      background: isActive
+                        ? (wouldBeNegative || !isAdd)
+                          ? 'rgba(239, 68, 68, 0.06)'
+                          : 'rgba(200, 169, 110, 0.06)'
+                        : 'rgba(255,255,255,0.02)',
+                      transition: 'all 0.15s',
+                    }}
                   >
-                    <div className="w-12 text-center">
-                      <div className="text-lg font-bold text-on-surface">{s}</div>
+                    <div style={{ width: 48, textAlign: 'center' }}>
+                      <div style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>{s}</div>
                     </div>
-                    <div className="text-xs text-on-surface-variant flex-1">
-                      Stock: <span className="font-bold text-on-surface">{current}</span>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1 }}>
+                      Stock: <span style={{ fontWeight: 700, color: '#fff' }}>{current}</span>
                       {isActive && (
-                        <span className="ml-2">
-                          → <span className={`font-bold ${isAdd ? 'text-green-500' : 'text-error'}`}>
+                        <span style={{ marginLeft: 8 }}>
+                          → <span style={{
+                            fontWeight: 700,
+                            color: !isAdd ? '#ef4444' : '#c8a96e',
+                          }}>
                             {current + (isAdd ? qty : -qty)}
                           </span>
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <button
                         type="button"
                         onClick={() => adjustQty(s, -1)}
                         disabled={qty === 0}
-                        className="w-9 h-9 rounded bg-surface-variant/50 border border-outline-variant/30 text-on-surface hover:bg-surface-variant disabled:opacity-30 transition-all flex items-center justify-center"
+                        className="transition-all hover:brightness-110 active:scale-95"
+                        style={{
+                          width: 36, height: 36, borderRadius: 8,
+                          background: 'rgba(255,255,255,0.06)',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          color: qty === 0 ? '#52525b' : '#fff',
+                          cursor: qty === 0 ? 'not-allowed' : 'pointer',
+                          opacity: qty === 0 ? 0.4 : 1,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: 18 }}>remove</span>
                       </button>
@@ -278,12 +303,29 @@ export default function AdjustStockModal({ isOpen, onClose, inventoryItem, onSuc
                         max={isAdd ? 9999 : current}
                         value={qty}
                         onChange={(e) => setQty(s, e.target.value)}
-                        className="w-16 h-9 bg-surface-container border border-outline-variant/30 rounded text-center text-base font-bold text-on-surface focus:ring-primary focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        style={{
+                          width: 64, height: 36,
+                          background: 'rgba(24, 24, 27, 0.8)',
+                          border: '1px solid rgba(255,255,255,0.12)',
+                          borderRadius: 8, textAlign: 'center',
+                          fontSize: 14, fontWeight: 700, color: '#fff',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          WebkitAppearance: 'none', MozAppearance: 'textfield',
+                        }}
                       />
                       <button
                         type="button"
                         onClick={() => adjustQty(s, 1)}
-                        className="w-9 h-9 rounded bg-surface-variant/50 border border-outline-variant/30 text-on-surface hover:bg-surface-variant transition-all flex items-center justify-center"
+                        className="transition-all hover:brightness-110 active:scale-95"
+                        style={{
+                          width: 36, height: 36, borderRadius: 8,
+                          background: 'rgba(200, 169, 110, 0.15)',
+                          border: '1px solid rgba(200, 169, 110, 0.3)',
+                          color: '#c8a96e',
+                          cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
                       </button>
@@ -296,58 +338,89 @@ export default function AdjustStockModal({ isOpen, onClose, inventoryItem, onSuc
 
           {/* Resumen del batch */}
           {totalSelectedSizes > 0 && (
-            <div className={`rounded-lg p-4 border ${isAdd ? 'bg-green-500/5 border-green-500/30' : 'bg-error/5 border-error/30'}`}>
-              <p className={`text-sm font-label-md mb-1 ${isAdd ? 'text-green-500' : 'text-error'}`}>
+            <div style={{
+              borderRadius: 10, padding: 16,
+              border: isAdd ? '1px solid rgba(200, 169, 110, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+              background: isAdd ? 'rgba(200, 169, 110, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+            }}>
+              <p style={{
+                fontSize: 13, fontWeight: 700, marginBottom: 4,
+                color: isAdd ? '#c8a96e' : '#ef4444',
+              }}>
                 Resumen del ajuste
               </p>
-              <p className="text-sm text-on-surface">
-                <span className="font-bold">{totalSelectedSizes}</span> {totalSelectedSizes === 1 ? 'talla' : 'tallas'} · {isAdd ? '+' : ''}
-                <span className="font-bold">{Math.abs(totalNetChange)}</span> unidades {isAdd ? 'agregadas' : 'retiradas'}
+              <p style={{ fontSize: 13, color: '#fff' }}>
+                <span style={{ fontWeight: 700 }}>{totalSelectedSizes}</span> {totalSelectedSizes === 1 ? 'talla' : 'tallas'} · {isAdd ? '+' : ''}
+                <span style={{ fontWeight: 700 }}>{Math.abs(totalNetChange)}</span> unidades {isAdd ? 'agregadas' : 'retiradas'}
               </p>
             </div>
           )}
 
           {/* Razón */}
           <div>
-            <label className="block text-sm font-label-md text-on-surface mb-3">
-              Razón del Ajuste <span className="text-error">*</span>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 8 }}>
+              Razon del Ajuste <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Ej: Reposición de stock desde almacén, Devolución de cliente, Inventario físico, etc."
-              className="w-full bg-surface-variant/30 border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface focus:ring-primary focus:border-primary resize-none"
-              rows="3"
+              placeholder="Ej: Reposicion de stock desde almacen, Devolucion de cliente, Inventario fisico, etc."
               required
+              rows="3"
+              style={{
+                width: '100%', padding: 12, borderRadius: 8,
+                background: 'rgba(24, 24, 27, 0.8)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: '#fff', fontSize: 13, resize: 'vertical',
+                outline: 'none', boxSizing: 'border-box',
+                fontFamily: 'inherit',
+              }}
             />
-            <p className="text-xs text-on-surface-variant mt-1">
-              Esta razón quedará registrada en el historial de movimientos (auditoría para el admin)
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+              Esta razon quedara registrada en el historial de movimientos (auditoria para el admin)
             </p>
           </div>
 
           {/* Botones */}
-          <div className="flex gap-3 pt-4 border-t border-outline-variant/30">
+          <div style={{ display: 'flex', gap: 12, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-surface-variant/30 hover:bg-surface-variant/50 text-on-surface py-3 rounded-lg font-label-md transition-all"
               disabled={loading}
+              className="transition-all hover:brightness-110"
+              style={{
+                flex: 1, padding: '12px 16px', borderRadius: 8,
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: '#fff', fontSize: 13, fontWeight: 700,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.5 : 1,
+              }}
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading || totalSelectedSizes === 0 || !!validationError}
-              className={`flex-1 py-3 rounded-lg font-label-md transition-all flex items-center justify-center gap-2 text-white ${accentBg} ${accentBgHover} disabled:opacity-50 disabled:cursor-not-allowed`}
+              className="transition-all hover:brightness-110 active:scale-95"
+              style={{
+                flex: 1, padding: '12px 16px', borderRadius: 8,
+                background: isAdd ? '#c8a96e' : '#ef4444',
+                border: 'none',
+                color: isAdd ? '#000' : '#fff', fontSize: 13, fontWeight: 700,
+                cursor: (loading || totalSelectedSizes === 0 || !!validationError) ? 'not-allowed' : 'pointer',
+                opacity: (loading || totalSelectedSizes === 0 || !!validationError) ? 0.5 : 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
             >
               {loading ? (
                 <>
-                  <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                  <span className="material-symbols-outlined" style={{ animation: 'spin 1s linear infinite' }}>progress_activity</span>
                   Aplicando...
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined">{isAdd ? 'add_circle' : 'remove_circle'}</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{isAdd ? 'add_circle' : 'remove_circle'}</span>
                   {isAdd ? `Agregar a ${totalSelectedSizes} ${totalSelectedSizes === 1 ? 'talla' : 'tallas'}` : `Retirar de ${totalSelectedSizes} ${totalSelectedSizes === 1 ? 'talla' : 'tallas'}`}
                 </>
               )}
