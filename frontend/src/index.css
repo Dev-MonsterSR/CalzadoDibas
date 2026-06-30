@@ -295,6 +295,15 @@ input, select, textarea {
     height: 28px !important;
     font-size: 10px !important;
   }
+  /* Footer en mobile: 2 columnas + menos padding */
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 24px !important;
+    padding: 32px 0 !important;
+  }
+  .footer-grid h4 {
+    font-size: 13px !important;
+  }
   /* Admin: header mas compacto y boton full-width en mobile */
   .admin-page {
     padding: 16px 0 24px !important;

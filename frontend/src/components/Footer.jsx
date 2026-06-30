@@ -41,7 +41,7 @@ export default function Footer() {
       background: 'var(--bg-secondary)', borderTop: '1px solid var(--outline-variant)',
       marginTop: 'auto',
     }}>
-      <div className="container" style={{
+      <div className="container footer-grid" style={{
         display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: 32, padding: '48px 0',
       }}>
