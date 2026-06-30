@@ -303,7 +303,15 @@ export default function SellerDashboard() {
         {/* ============ POS VIEW (Venta Nueva) ============ */}
         {currentView === 'pos' && (
           <>
-            <header className="mb-stack-lg">
+            <header
+              className="seller-header mb-stack-lg p-4 rounded-xl"
+              style={{
+                background: 'rgba(24, 24, 27, 0.7)',
+                backdropFilter: 'blur(12px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
               <h1 className="font-headline-lg text-headline-lg text-on-surface">Venta Nueva</h1>
               <p className="font-body-md text-body-md text-on-surface-variant mt-1">Crear un nuevo pedido manualmente</p>
             </header>
@@ -321,7 +329,15 @@ export default function SellerDashboard() {
         {/* ============ ORDERS VIEW (Mis Pedidos) ============ */}
         {currentView === 'orders' && (
           <>
-            <header className="mb-stack-lg">
+            <header
+              className="seller-header mb-stack-lg p-4 rounded-xl"
+              style={{
+                background: 'rgba(24, 24, 27, 0.7)',
+                backdropFilter: 'blur(12px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
               <h1 className="font-headline-lg text-headline-lg text-on-surface">Mis Pedidos</h1>
               <p className="font-body-md text-body-md text-on-surface-variant mt-1">Pedidos asignados a tu sede ({locationLabels[location]})</p>
             </header>
@@ -396,7 +412,15 @@ export default function SellerDashboard() {
         {/* ============ INVENTORY VIEW (Almacén/Stock) ============ */}
         {currentView === 'inventory' && (
           <>
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-stack-lg">
+            <header
+              className="seller-header flex flex-col md:flex-row md:items-center justify-between gap-4 mb-stack-lg p-4 rounded-xl"
+              style={{
+                background: 'rgba(24, 24, 27, 0.7)',
+                backdropFilter: 'blur(12px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
               <div>
                 <h1 className="font-headline-lg text-headline-lg text-on-surface">Almacén / Stock</h1>
                 <p className="font-body-md text-body-md text-on-surface-variant mt-1">Inventario de {locationLabels[location]} - Stock por tallas</p>
@@ -514,7 +538,15 @@ export default function SellerDashboard() {
         {/* ============ PROFILE VIEW (Mi Perfil) ============ */}
         {currentView === 'profile' && (
           <>
-            <header className="mb-stack-lg">
+            <header
+              className="seller-header mb-stack-lg p-4 rounded-xl"
+              style={{
+                background: 'rgba(24, 24, 27, 0.7)',
+                backdropFilter: 'blur(12px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
               <h1 className="font-headline-lg text-headline-lg text-on-surface">Mi Perfil</h1>
               <p className="font-body-md text-body-md text-on-surface-variant mt-1">Información de tu cuenta</p>
             </header>
