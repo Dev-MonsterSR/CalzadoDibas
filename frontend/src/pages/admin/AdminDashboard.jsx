@@ -482,42 +482,56 @@ export default function AdminDashboard() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {groupedLowStock.map((group, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 10, padding: 8,
-                  background: 'rgba(239, 68, 68, 0.08)', borderRadius: 'var(--radius)',
-                  border: '1px solid rgba(239, 68, 68, 0.2)',
-                }}>
-                  <span className="material-symbols-outlined" style={{ color: 'var(--error)', fontSize: 18, marginTop: 2, flexShrink: 0 }}>warning</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ color: '#fff', fontSize: 12, fontWeight: 500, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group.product_name}</p>
-                    {/* Lista de sedes con stock bajo */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                      {group.warehouses.map((w, j) => {
-                        const wl = WAREHOUSE_LABELS[w.warehouse] || { name: w.warehouse, icon: 'inventory' };
-                        const wc = WAREHOUSE_COLORS[w.warehouse] || '#ef4444';
-                        return (
-                          <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10 }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: 12, color: wc }}>{wl.icon}</span>
-                            <span style={{ color: wc, fontWeight: 600, minWidth: 56 }}>{wl.name}</span>
-                            <span style={{
-                              color: 'var(--text-muted)', fontFamily: 'monospace',
-                              marginLeft: 'auto', fontWeight: 700, color: 'var(--error)',
-                            }}>
-                              {w.stock} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>/ min {w.min_stock}</span>
-                            </span>
-                          </div>
-                        );
-                      })}
+              {groupedLowStock.map((group, i) => {
+                // Mapeos de sede -> nombre legible y color (definidos aqui
+                // porque se usan en el .map anidado de warehouses)
+                const WAREHOUSE_LABELS = {
+                  fabrica: { name: 'Fábrica', icon: 'factory' },
+                  tienda_trujillo: { name: 'Trujillo', icon: 'storefront' },
+                  tienda_lima: { name: 'Lima', icon: 'storefront' },
+                };
+                const WAREHOUSE_COLORS = {
+                  fabrica: '#8b5cf6',
+                  tienda_trujillo: '#f59e0b',
+                  tienda_lima: '#3b82f6',
+                };
+                return (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 10, padding: 8,
+                    background: 'rgba(239, 68, 68, 0.08)', borderRadius: 'var(--radius)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                  }}>
+                    <span className="material-symbols-outlined" style={{ color: 'var(--error)', fontSize: 18, marginTop: 2, flexShrink: 0 }}>warning</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ color: '#fff', fontSize: 12, fontWeight: 500, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{group.product_name}</p>
+                      {/* Lista de sedes con stock bajo */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {group.warehouses.map((w, j) => {
+                          const wl = WAREHOUSE_LABELS[w.warehouse] || { name: w.warehouse, icon: 'inventory' };
+                          const wc = WAREHOUSE_COLORS[w.warehouse] || '#ef4444';
+                          return (
+                            <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10 }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: 12, color: wc }}>{wl.icon}</span>
+                              <span style={{ color: wc, fontWeight: 600, minWidth: 56 }}>{wl.name}</span>
+                              <span style={{
+                                color: 'var(--text-muted)', fontFamily: 'monospace',
+                                marginLeft: 'auto', fontWeight: 700, color: 'var(--error)',
+                              }}>
+                                {w.stock} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>/ min {w.min_stock}</span>
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {group.warehouses.length > 1 && (
+                        <p style={{ color: 'var(--text-muted)', fontSize: 9, marginTop: 4, fontStyle: 'italic' }}>
+                          ⚠ En {group.warehouses.length} sedes
+                        </p>
+                      )}
                     </div>
-                    {group.warehouses.length > 1 && (
-                      <p style={{ color: 'var(--text-muted)', fontSize: 9, marginTop: 4, fontStyle: 'italic' }}>
-                        ⚠ En {group.warehouses.length} sedes
-                      </p>
-                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>
