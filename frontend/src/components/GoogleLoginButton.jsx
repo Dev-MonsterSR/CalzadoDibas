@@ -115,6 +115,10 @@ export default function GoogleLoginButton({ text = 'Continuar con Google' }) {
       });
 
       if (buttonRef.current) {
+        // Configurar el boton oficial de Google.
+        // use_fedcm_for_prompt: true activa el popup nativo del navegador (FedCM)
+        // que muestra la lista de cuentas de Google en un dialogo modal
+        // nativo (en vez de una ventana separada).
         window.google.accounts.id.renderButton(buttonRef.current, {
           type: 'standard',
           theme: 'outline',
@@ -123,6 +127,7 @@ export default function GoogleLoginButton({ text = 'Continuar con Google' }) {
           shape: 'rectangular',
           logo_alignment: 'left',
           width: 360,
+          use_fedcm_for_prompt: true,
         });
       }
     };
