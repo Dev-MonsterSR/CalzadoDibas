@@ -907,13 +907,21 @@ export default function SellerDashboard() {
 
 function NavItem({ icon, label, active, onClick }) {
   return (
-    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-      active
-        ? 'text-primary bg-primary-container/15 border-l-4 border-primary pl-3 font-bold'
-        : 'text-on-surface-variant hover:bg-surface-variant/50 hover:text-on-surface border-l-4 border-transparent'
-    }`}>
-      <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{icon}</span>
-      <span className="font-label-md text-label-md">{label}</span>
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
+      style={{
+        background: active ? 'rgba(200, 169, 110, 0.12)' : 'transparent',
+        color: active ? '#c8a96e' : '#a1a1aa',
+        borderLeft: active ? '3px solid #c8a96e' : '3px solid transparent',
+        fontWeight: active ? 700 : 500,
+        fontSize: 14,
+        cursor: 'pointer',
+        paddingLeft: active ? 13 : 16,
+      }}
+    >
+      <span className="material-symbols-outlined" style={{ fontSize: 22, color: active ? '#c8a96e' : '#a1a1aa' }}>{icon}</span>
+      <span>{label}</span>
     </button>
   );
 }
