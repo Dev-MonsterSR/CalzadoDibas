@@ -198,15 +198,24 @@ export default function SellerDashboard() {
             {/* Main Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-gutter">
               {/* Orders Table */}
-              <section className="xl:col-span-2 bg-surface-container rounded-xl border border-outline-variant/30 overflow-hidden">
-                <div className="p-6 border-b border-outline-variant/30 flex justify-between items-center">
+              <section
+                className="xl:col-span-2 overflow-hidden"
+                style={{
+                  background: 'rgba(24, 24, 27, 0.7)',
+                  backdropFilter: 'blur(12px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 12,
+                }}
+              >
+                <div className="p-6 border-b flex justify-between items-center" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
                   <h2 className="font-title-md text-title-md text-on-surface">Pedidos para Despacho</h2>
                   <button onClick={() => setCurrentView('orders')} className="text-primary hover:underline text-label-md font-label-md">Ver mi historial</button>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-surface-container-high/50">
+                      <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
                         <th className="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">ID</th>
                         <th className="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Cliente</th>
                         <th className="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Items</th>
@@ -214,7 +223,7 @@ export default function SellerDashboard() {
                         <th className="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Acción</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-outline-variant/20">
+                    <tbody>
                       {pickupOrders.length === 0 && (
                         <tr><td colSpan={5} className="px-6 py-8 text-center text-on-surface-variant">No hay pedidos pendientes de recojo</td></tr>
                       )}
@@ -225,7 +234,7 @@ export default function SellerDashboard() {
                           'listo_recojo': { label: 'Listo Recojo', bg: 'bg-yellow-500/10', text: 'text-yellow-500' },
                         }[order.status] || { label: order.status, bg: 'bg-gray-500/10', text: 'text-gray-500' };
                         return (
-                        <tr key={order.id} className="hover:bg-surface-variant/20 transition-colors">
+                        <tr key={order.id} style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                           <td className="px-6 py-4 text-on-surface font-label-md">#{order.id}</td>
                           <td className="px-6 py-4 text-on-surface-variant font-body-md">{order.customer_name || 'Cliente'}</td>
                           <td className="px-6 py-4 text-on-surface-variant font-body-md">{order.items?.length || 0} items</td>
@@ -247,7 +256,16 @@ export default function SellerDashboard() {
               </section>
 
               {/* Stock Panel */}
-              <section className="bg-surface-container rounded-xl border border-outline-variant/30 flex flex-col">
+              <section
+                className="flex flex-col"
+                style={{
+                  background: 'rgba(24, 24, 27, 0.7)',
+                  backdropFilter: 'blur(12px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 12,
+                }}
+              >
                 <div className="p-6 border-b border-outline-variant/30">
                   <h2 className="font-title-md text-title-md text-on-surface mb-4">Consulta de Stock</h2>
                   <div className="relative">
