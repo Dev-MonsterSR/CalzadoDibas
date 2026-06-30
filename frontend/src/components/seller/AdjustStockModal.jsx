@@ -124,19 +124,42 @@ export default function AdjustStockModal({ isOpen, onClose, inventoryItem, onSuc
   const accentBgHover = isAdd ? 'hover:bg-green-600' : 'hover:bg-error/80';
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-surface-container rounded-xl border border-outline-variant max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-outline-variant/30 flex justify-between items-center">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{
+        background: 'rgba(0,0,0,0.75)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        style={{
+          background: 'rgba(24, 24, 27, 0.85)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 12,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        }}
+      >
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 className="font-title-lg text-title-lg text-on-surface">Ajustar Stock</h2>
-            <p className="text-sm text-on-surface-variant mt-1">{inventoryItem.product_name}</p>
+            <h2 style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Ajustar Stock</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>{inventoryItem.product_name}</p>
           </div>
-          <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface">
-            <span className="material-symbols-outlined">close</span>
+          <button
+            onClick={onClose}
+            className="hover:opacity-70 transition-opacity"
+            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>close</span>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
           {error && (
             <div className="bg-error-container/20 border border-error rounded-lg p-4 flex items-start gap-2">
               <span className="material-symbols-outlined text-error">error</span>

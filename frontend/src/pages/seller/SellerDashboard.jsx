@@ -626,67 +626,103 @@ export default function SellerDashboard() {
 
             {/* Low Stock Alert */}
             {lowStockItems.length > 0 && (
-              <div className="bg-error-container/10 border border-error/30 rounded-xl p-4 mb-6 flex items-start gap-3">
-                <span className="material-symbols-outlined text-error mt-1">warning</span>
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.08)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: 12, padding: 16, marginBottom: 24,
+                display: 'flex', alignItems: 'center', gap: 12,
+              }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 10,
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <span className="material-symbols-outlined" style={{ color: '#ef4444', fontSize: 22 }}>warning</span>
+                </div>
                 <div>
-                  <p className="font-label-md text-error mb-1">Alerta de Stock Bajo</p>
-                  <p className="text-sm text-on-surface-variant">{lowStockItems.length} producto(s) por debajo del mínimo</p>
+                  <p style={{ color: '#ef4444', fontSize: 14, fontWeight: 700, marginBottom: 2 }}>Alerta de Stock Bajo</p>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>{lowStockItems.length} producto{lowStockItems.length !== 1 ? 's' : ''} por debajo del minimo</p>
                 </div>
               </div>
             )}
 
             {/* Inventory Grid */}
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {filteredInventory.map(item => {
                 const isLow = item.stock <= item.min_stock;
                 const sizes = item.sizes || [];
+                const stockPercent = Math.min(100, (item.stock / (item.min_stock * 3)) * 100);
                 return (
-                  <div key={item.id} className={`bg-surface-container rounded-xl border p-6 ${isLow ? 'border-error/50' : 'border-outline-variant/30'}`}>
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-start gap-3 mb-2">
-                          <h3 className="font-label-md text-on-surface text-lg">{item.product_name}</h3>
-                          <span className={`text-xs font-bold px-2 py-1 rounded ${isLow ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'}`}>
+                  <div key={item.id} style={{
+                    background: 'rgba(24, 24, 27, 0.7)',
+                    backdropFilter: 'blur(12px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                    border: `1px solid ${isLow ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255,255,255,0.08)'}`,
+                    borderRadius: 12, padding: 20,
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+                          <h3 style={{ color: '#fff', fontSize: 16, fontWeight: 700 }}>{item.product_name}</h3>
+                          <span style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                            padding: '3px 10px', borderRadius: 999,
+                            fontSize: 11, fontWeight: 700, letterSpacing: '0.03em',
+                            color: isLow ? '#ef4444' : '#10b981',
+                            background: isLow ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)',
+                            border: `1px solid ${isLow ? '#ef444440' : '#10b98140'}`,
+                          }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 12 }}>
+                              {isLow ? 'trending_down' : 'check_circle'}
+                            </span>
                             {item.stock} uds total
                           </span>
                         </div>
-                        <p className="text-xs text-on-surface-variant mb-1">Código: {item.product_code}</p>
-                        <p className="text-xs text-on-surface-variant">Mínimo: {item.min_stock} uds</p>
+                        <div style={{ display: 'flex', gap: 12, color: 'var(--text-muted)', fontSize: 12, flexWrap: 'wrap' }}>
+                          <span>Codigo: <span style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{item.product_code}</span></span>
+                          <span>Minimo: <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{item.min_stock} uds</span></span>
+                        </div>
                       </div>
                       <button
                         onClick={() => handleAdjustStock(item)}
-                        className="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-label-md text-sm hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 whitespace-nowrap"
+                        className="transition-all hover:brightness-110 active:scale-95"
+                        style={{
+                          background: 'var(--primary-container)', color: '#000',
+                          padding: '8px 16px', borderRadius: 8,
+                          fontSize: 13, fontWeight: 700,
+                          border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                          display: 'inline-flex', alignItems: 'center', gap: 6,
+                        }}
                       >
-                        <span className="material-symbols-outlined text-sm">edit</span>
+                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>edit</span>
                         Ajustar Stock
                       </button>
                     </div>
 
                     {/* Sizes Grid */}
                     {sizes.length > 0 && (
-                      <div className="border-t border-outline-variant/20 pt-4">
-                        <p className="text-xs font-label-md text-on-surface-variant mb-3">Stock por Talla:</p>
-                        <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14 }}>
+                        <p style={{ color: 'var(--text-muted)', fontSize: 11, fontWeight: 600, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stock por Talla</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(64px, 1fr))', gap: 8 }}>
                           {sizes.map(s => {
                             const isSizeLow = s.stock === 0;
                             const isSizeWarning = s.stock > 0 && s.stock <= 2;
+                            const sizeColor = isSizeLow ? '#ef4444' : isSizeWarning ? '#f59e0b' : '#10b981';
+                            const sizeBg = isSizeLow ? 'rgba(239,68,68,0.08)' : isSizeWarning ? 'rgba(245,158,11,0.08)' : 'rgba(16,185,129,0.08)';
                             return (
                               <div
                                 key={s.size}
-                                className={`p-2 rounded-lg border text-center ${
-                                  isSizeLow
-                                    ? 'bg-error/10 border-error/30'
-                                    : isSizeWarning
-                                    ? 'bg-yellow-500/10 border-yellow-500/30'
-                                    : 'bg-surface-variant/30 border-outline-variant/30'
-                                }`}
+                                style={{
+                                  padding: '10px 8px', borderRadius: 8,
+                                  background: sizeBg,
+                                  border: `1px solid ${sizeColor}50`,
+                                  textAlign: 'center',
+                                }}
                               >
-                                <div className="text-sm font-bold text-on-surface">{s.size}</div>
-                                <div className={`text-xs mt-1 ${
-                                  isSizeLow ? 'text-error' : isSizeWarning ? 'text-yellow-500' : 'text-on-surface-variant'
-                                }`}>
-                                  {s.stock}
-                                </div>
+                                <div style={{ color: '#fff', fontSize: 14, fontWeight: 700 }}>{s.size}</div>
+                                <div style={{ color: sizeColor, fontSize: 13, fontWeight: 700, marginTop: 2 }}>{s.stock}</div>
                               </div>
                             );
                           })}
@@ -695,15 +731,17 @@ export default function SellerDashboard() {
                     )}
 
                     {/* Stock Bar */}
-                    <div className="mt-4 flex items-center gap-3">
-                      <div className="flex-1 h-2 bg-surface-variant/30 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${isLow ? 'bg-error' : 'bg-primary'}`}
-                          style={{ width: `${Math.min(100, (item.stock / (item.min_stock * 3)) * 100)}%` }}
-                        />
+                    <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{
+                          width: `${stockPercent}%`,
+                          height: '100%',
+                          background: isLow ? 'linear-gradient(90deg, #ef4444, #f87171)' : 'linear-gradient(90deg, #10b981, #34d399)',
+                          transition: 'width 0.5s ease',
+                        }} />
                       </div>
-                      <span className="text-xs text-on-surface-variant whitespace-nowrap">
-                        {Math.round((item.stock / (item.min_stock * 3)) * 100)}%
+                      <span style={{ color: 'var(--text-muted)', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', minWidth: 36, textAlign: 'right' }}>
+                        {Math.round(stockPercent)}%
                       </span>
                     </div>
                   </div>
@@ -733,48 +771,89 @@ export default function SellerDashboard() {
               }}
             >
               <h1 className="font-headline-lg text-headline-lg text-on-surface">Mi Perfil</h1>
-              <p className="font-body-md text-body-md text-on-surface-variant mt-1">Información de tu cuenta</p>
+              <p className="font-body-md text-body-md text-on-surface-variant mt-1">Informacion de tu cuenta</p>
             </header>
 
-            <div className="max-w-2xl">
-              <div className="bg-surface-container rounded-xl border border-outline-variant/30 p-8">
-                <div className="flex items-center gap-6 mb-8 pb-8 border-b border-outline-variant/30">
-                  <div className="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-2xl font-bold">
+            <div style={{ maxWidth: 600, display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {/* Profile card */}
+              <div style={{
+                background: 'rgba(24, 24, 27, 0.7)',
+                backdropFilter: 'blur(12px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 12, padding: 32,
+                boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{
+                    width: 80, height: 80, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, var(--primary-container) 0%, #8b6f3a 100%)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#000', fontSize: 28, fontWeight: 800, flexShrink: 0,
+                    boxShadow: '0 4px 16px rgba(200, 169, 110, 0.4)',
+                  }}>
                     {sellerInitials}
                   </div>
-                  <div>
-                    <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{sellerName}</h2>
-                    <p className="text-on-surface-variant">{user?.email}</p>
-                    <span className="inline-block mt-2 px-3 py-1 bg-primary-container/10 text-primary text-xs font-bold rounded">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h2 style={{ color: '#fff', fontSize: 22, fontWeight: 700, marginBottom: 4 }}>{sellerName}</h2>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 8 }}>{user?.email}</p>
+                    <span style={{
+                      display: 'inline-block', padding: '4px 12px', borderRadius: 999,
+                      fontSize: 11, fontWeight: 700, letterSpacing: '0.03em',
+                      color: 'var(--primary-container)', background: 'rgba(200, 169, 110, 0.12)',
+                      border: '1px solid rgba(200, 169, 110, 0.3)',
+                    }}>
                       {locationLabels[location] || 'Personal de Tienda'}
                     </span>
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-on-surface-variant text-sm mb-2">Rol</label>
-                    <div className="bg-surface-variant/30 rounded-lg px-4 py-3 text-on-surface">
-                      {user?.role === 'vendedor_trujillo' ? 'Vendedor - Trujillo' : 'Vendedor - Lima'}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {[
+                    { label: 'Rol', value: user?.role === 'vendedor_trujillo' ? 'Vendedor - Trujillo' : 'Vendedor - Lima', icon: 'badge' },
+                    { label: 'Email', value: user?.email, icon: 'mail' },
+                    { label: 'Sede asignada', value: locationLabels[location], icon: 'storefront' },
+                  ].map(field => (
+                    <div key={field.label} style={{
+                      padding: '12px 16px', borderRadius: 10,
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      display: 'flex', alignItems: 'center', gap: 12,
+                    }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: 8,
+                        background: 'rgba(200, 169, 110, 0.12)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 18, color: 'var(--primary-container)' }}>{field.icon}</span>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ color: 'var(--text-muted)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{field.label}</p>
+                        <p style={{ color: '#fff', fontSize: 14, fontWeight: 500 }}>{field.value}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-on-surface-variant text-sm mb-2">Email</label>
-                    <div className="bg-surface-variant/30 rounded-lg px-4 py-3 text-on-surface">{user?.email}</div>
-                  </div>
-                  <div>
-                    <label className="block text-on-surface-variant text-sm mb-2">Sede asignada</label>
-                    <div className="bg-surface-variant/30 rounded-lg px-4 py-3 text-on-surface">{locationLabels[location]}</div>
-                  </div>
-                </div>
-
-                <div className="mt-8 pt-8 border-t border-outline-variant/30">
-                  <button onClick={logout} className="w-full bg-error-container/20 hover:bg-error-container/30 text-error py-3 rounded-lg font-label-md flex items-center justify-center gap-2 transition-all">
-                    <span className="material-symbols-outlined">logout</span>
-                    Cerrar Sesión
-                  </button>
+                  ))}
                 </div>
               </div>
+
+              {/* Logout button */}
+              <button
+                onClick={logout}
+                className="transition-all hover:brightness-110 active:scale-95"
+                style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  color: '#ef4444',
+                  padding: '14px 24px', borderRadius: 10,
+                  fontSize: 14, fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>logout</span>
+                Cerrar Sesion
+              </button>
             </div>
           </>
         )}
