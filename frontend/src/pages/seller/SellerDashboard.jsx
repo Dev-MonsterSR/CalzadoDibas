@@ -101,8 +101,15 @@ export default function SellerDashboard() {
 
   return (
     <div className="bg-background text-on-background min-h-screen flex">
-      {/* Sidebar */}
-      <aside className="w-72 bg-surface-container-lowest border-r border-outline-variant hidden md:flex flex-col h-screen sticky top-0">
+      {/* Sidebar - Liquid Glass */}
+      <aside
+        className="seller-sidebar w-72 border-r border-outline-variant hidden md:flex flex-col h-screen sticky top-0"
+        style={{
+          background: 'rgba(24, 24, 27, 0.85)',
+          backdropFilter: 'blur(16px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+        }}
+      >
         <div className="p-stack-md flex items-center justify-center border-b border-outline-variant h-20">
           <img
             alt="Logo Calzados Diba's"
@@ -155,7 +162,15 @@ export default function SellerDashboard() {
         {/* ============ DASHBOARD VIEW ============ */}
         {currentView === 'dashboard' && (
           <>
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-stack-lg">
+            <header
+              className="seller-header flex flex-col md:flex-row md:items-center justify-between gap-4 mb-stack-lg p-4 rounded-xl"
+              style={{
+                background: 'rgba(24, 24, 27, 0.7)',
+                backdropFilter: 'blur(12px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
               <div>
                 <h1 className="font-headline-lg text-headline-lg text-on-surface">Panel Operativo</h1>
                 <p className="font-body-md text-body-md text-on-surface-variant mt-1">Hola {sellerName}, listo para gestionar las ventas de hoy.</p>
@@ -548,8 +563,17 @@ export default function SellerDashboard() {
         )}
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container border-t border-outline-variant h-16 flex items-center justify-around z-50">
+      {/* Mobile Bottom Navigation - Liquid Glass */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-16 flex items-center justify-around"
+        style={{
+          background: 'rgba(24, 24, 27, 0.85)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.3)',
+        }}
+      >
         <button onClick={() => setCurrentView('dashboard')} className={`${currentView === 'dashboard' ? 'text-primary' : 'text-on-surface-variant'} flex flex-col items-center`}>
           <span className="material-symbols-outlined">dashboard</span>
           <span className="text-[10px]">Panel</span>
