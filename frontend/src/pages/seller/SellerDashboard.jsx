@@ -206,44 +206,81 @@ export default function SellerDashboard() {
                   WebkitBackdropFilter: 'blur(12px) saturate(180%)',
                   border: '1px solid rgba(255,255,255,0.08)',
                   borderRadius: 12,
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
                 }}
               >
-                <div className="p-6 border-b flex justify-between items-center" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-                  <h2 className="font-title-md text-title-md text-on-surface">Pedidos para Despacho</h2>
-                  <button onClick={() => setCurrentView('orders')} className="text-primary hover:underline text-label-md font-label-md">Ver mi historial</button>
+                <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h2 style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Pedidos para Despacho</h2>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>{pickupOrders.length} pedido{pickupOrders.length !== 1 ? 's' : ''} listo{pickupOrders.length !== 1 ? 's' : ''} para entregar</p>
+                  </div>
+                  <button
+                    onClick={() => setCurrentView('orders')}
+                    style={{ color: 'var(--primary-container)', fontSize: 13, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  >
+                    Ver mi historial
+                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
+                  </button>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
-                        <th className="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">ID</th>
-                        <th className="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Cliente</th>
-                        <th className="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Items</th>
-                        <th className="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Estado</th>
-                        <th className="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Acción</th>
+                      <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <th style={{ padding: '12px 20px', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ID</th>
+                        <th style={{ padding: '12px 20px', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cliente</th>
+                        <th style={{ padding: '12px 20px', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Items</th>
+                        <th style={{ padding: '12px 20px', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Estado</th>
+                        <th style={{ padding: '12px 20px', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Accion</th>
                       </tr>
                     </thead>
                     <tbody>
                       {pickupOrders.length === 0 && (
-                        <tr><td colSpan={5} className="px-6 py-8 text-center text-on-surface-variant">No hay pedidos pendientes de recojo</td></tr>
+                        <tr><td colSpan={5} style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>No hay pedidos pendientes de recojo</td></tr>
                       )}
                       {pickupOrders.map(order => {
-                        const statusBadge = {
-                          'pagado': { label: 'Pagado', bg: 'bg-blue-500/10', text: 'text-blue-500' },
-                          'preparando': { label: 'Preparando', bg: 'bg-orange-500/10', text: 'text-orange-500' },
-                          'listo_recojo': { label: 'Listo Recojo', bg: 'bg-yellow-500/10', text: 'text-yellow-500' },
-                        }[order.status] || { label: order.status, bg: 'bg-gray-500/10', text: 'text-gray-500' };
+                        const statusConfig = {
+                          'pagado': { label: 'PAGADO', color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
+                          'preparando': { label: 'PREPARANDO', color: '#a855f7', bg: 'rgba(168,85,247,0.12)' },
+                          'listo_recojo': { label: 'LISTO', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+                          'entregado': { label: 'ENTREGADO', color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+                        }[order.status] || { label: order.status, color: '#6b7280', bg: 'rgba(107,114,128,0.12)' };
                         return (
-                        <tr key={order.id} style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                          <td className="px-6 py-4 text-on-surface font-label-md">#{order.id}</td>
-                          <td className="px-6 py-4 text-on-surface-variant font-body-md">{order.customer_name || 'Cliente'}</td>
-                          <td className="px-6 py-4 text-on-surface-variant font-body-md">{order.items?.length || 0} items</td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2 py-1 ${statusBadge.bg} ${statusBadge.text} text-xs font-bold rounded`}>{statusBadge.label}</span>
+                        <tr key={order.id} style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                          <td style={{ padding: '14px 20px' }}>
+                            <span style={{ color: 'var(--primary-container)', fontWeight: 700, fontFamily: 'monospace', fontSize: 14 }}>#{order.id}</span>
                           </td>
-                          <td className="px-6 py-4 text-right">
-                            <button onClick={() => handleVerifyQR(order.id)} disabled={verifying} className="bg-primary text-on-primary px-3 py-1.5 rounded text-xs font-bold hover:brightness-110 flex items-center gap-1 ml-auto disabled:opacity-50">
-                              <span className="material-symbols-outlined text-sm">qr_code_scanner</span>
+                          <td style={{ padding: '14px 20px', color: '#fff', fontSize: 14, fontWeight: 500 }}>
+                            {order.customer_name || 'Cliente'}
+                          </td>
+                          <td style={{ padding: '14px 20px', color: 'var(--text-muted)', fontSize: 13 }}>
+                            {order.items?.length || 0} {order.items?.length === 1 ? 'item' : 'items'}
+                          </td>
+                          <td style={{ padding: '14px 20px' }}>
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '4px 10px', borderRadius: 999,
+                              fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
+                              color: statusConfig.color, background: statusConfig.bg,
+                              border: `1px solid ${statusConfig.color}50`,
+                            }}>
+                              {statusConfig.label}
+                            </span>
+                          </td>
+                          <td style={{ padding: '14px 20px', textAlign: 'right' }}>
+                            <button
+                              onClick={() => handleVerifyQR(order.id)}
+                              disabled={verifying}
+                              className="transition-all hover:brightness-110 active:scale-95"
+                              style={{
+                                background: 'var(--primary-container)', color: '#000',
+                                padding: '8px 14px', borderRadius: 6,
+                                fontSize: 11, fontWeight: 700, letterSpacing: '0.02em',
+                                border: 'none', cursor: verifying ? 'not-allowed' : 'pointer',
+                                opacity: verifying ? 0.6 : 1,
+                                display: 'inline-flex', alignItems: 'center', gap: 4,
+                              }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>qr_code_scanner</span>
                               VERIFICAR QR
                             </button>
                           </td>
@@ -264,35 +301,76 @@ export default function SellerDashboard() {
                   WebkitBackdropFilter: 'blur(12px) saturate(180%)',
                   border: '1px solid rgba(255,255,255,0.08)',
                   borderRadius: 12,
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
                 }}
               >
-                <div className="p-6 border-b border-outline-variant/30">
-                  <h2 className="font-title-md text-title-md text-on-surface mb-4">Consulta de Stock</h2>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-                    <input className="w-full bg-surface-variant/30 border-outline-variant/30 rounded-lg pl-10 text-sm focus:ring-primary focus:border-primary" placeholder="Buscar producto..." type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <h2 style={{ color: '#fff', fontSize: 16, fontWeight: 700 }}>Consulta de Stock</h2>
+                    <span className="material-symbols-outlined" style={{ color: 'var(--text-muted)', fontSize: 18 }}>inventory_2</span>
+                  </div>
+                  <div style={{ position: 'relative' }}>
+                    <span className="material-symbols-outlined" style={{
+                      position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                      color: 'var(--text-muted)', fontSize: 18, pointerEvents: 'none',
+                    }}>search</span>
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      placeholder="Buscar producto..."
+                      style={{
+                        width: '100%', padding: '10px 14px 10px 40px',
+                        background: 'var(--bg-dark)', border: '1px solid var(--outline-variant)',
+                        borderRadius: 'var(--radius)', color: 'var(--text-primary)',
+                        fontSize: 13, outline: 'none', boxSizing: 'border-box',
+                      }}
+                    />
                   </div>
                 </div>
-                <div className="p-6 space-y-6 flex-1">
+                <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
                   {filteredInventory.slice(0, 5).map(item => {
                     const isLow = item.stock <= item.min_stock;
                     return (
-                      <div key={item.id} className="group">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-label-md text-label-md text-on-surface">{item.product_name}</span>
-                          <span className={`text-xs font-bold ${isLow ? 'text-error' : 'text-primary'}`}>
-                            {isLow ? `Stock Bajo (${item.stock})` : `Disponible (${item.stock})`}
+                      <div key={item.id} style={{
+                        padding: '10px 12px', borderRadius: 8,
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                          <span style={{ color: '#fff', fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.product_name}</span>
+                          <span style={{
+                            fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
+                            color: isLow ? '#ef4444' : '#10b981',
+                            background: isLow ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)',
+                            padding: '3px 8px', borderRadius: 999,
+                          }}>
+                            {isLow ? 'STOCK BAJO' : 'DISPONIBLE'}
                           </span>
                         </div>
-                        <span className="bg-surface-variant/50 px-2 py-1 rounded text-[10px] text-on-surface-variant">Código: {item.product_code}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: 10, fontFamily: 'monospace' }}>{item.product_code}</span>
+                          <span style={{ color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }}>{item.stock} uds</span>
+                        </div>
                       </div>
                     );
                   })}
-                  {filteredInventory.length === 0 && <p className="text-center text-on-surface-variant py-8">No se encontraron productos</p>}
-                  <div className="mt-auto pt-6 border-t border-outline-variant/30">
-                    <button onClick={() => setCurrentView('inventory')} className="w-full bg-surface-variant/30 hover:bg-surface-variant/50 text-on-surface text-xs font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all">
-                      <span className="material-symbols-outlined text-sm">list_alt</span>
-                      VER CATÁLOGO COMPLETO
+                  {filteredInventory.length === 0 && <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 20, fontSize: 13 }}>No se encontraron productos</p>}
+                  <div style={{ marginTop: 'auto', paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                    <button
+                      onClick={() => setCurrentView('inventory')}
+                      className="w-full transition-all hover:brightness-110"
+                      style={{
+                        background: 'rgba(255,255,255,0.06)',
+                        color: '#fff', padding: '10px 16px', borderRadius: 8,
+                        fontSize: 12, fontWeight: 700,
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 16 }}>list_alt</span>
+                      VER CATALOGO COMPLETO
                     </button>
                   </div>
                 </div>
@@ -333,12 +411,40 @@ export default function SellerDashboard() {
               <h1 className="font-headline-lg text-headline-lg text-on-surface">Venta Nueva</h1>
               <p className="font-body-md text-body-md text-on-surface-variant mt-1">Crear un nuevo pedido manualmente</p>
             </header>
-            <div className="bg-surface-container rounded-xl border border-outline-variant/30 p-8 text-center">
-              <span className="material-symbols-outlined text-6xl text-on-surface-variant mb-4">point_of_sale</span>
-              <h2 className="font-title-md text-title-md text-on-surface mb-2">Punto de Venta</h2>
-              <p className="text-on-surface-variant mb-6">Esta funcionalidad estará disponible próximamente.<br/>Por ahora, los clientes pueden crear pedidos desde la tienda online.</p>
-              <button onClick={() => navigate('/catalogo')} className="bg-primary-container text-on-primary-container px-6 py-3 rounded-lg font-label-md hover:brightness-110 transition-all">
-                Ir al Catálogo
+            <div style={{
+              background: 'rgba(24, 24, 27, 0.7)',
+              backdropFilter: 'blur(12px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 12, padding: 60, textAlign: 'center',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+            }}>
+              <div style={{
+                width: 80, height: 80, borderRadius: 20, margin: '0 auto 20px',
+                background: 'rgba(200, 169, 110, 0.15)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '1px solid rgba(200, 169, 110, 0.3)',
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--primary-container)' }}>point_of_sale</span>
+              </div>
+              <h2 style={{ color: '#fff', fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Punto de Venta</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24, maxWidth: 360, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 }}>
+                Esta funcionalidad estara disponible proximamente.<br/>
+                Por ahora, los clientes pueden crear pedidos desde la tienda online.
+              </p>
+              <button
+                onClick={() => navigate('/catalogo')}
+                className="transition-all hover:brightness-110 active:scale-95"
+                style={{
+                  background: 'var(--primary-container)', color: '#000',
+                  padding: '12px 24px', borderRadius: 8,
+                  fontSize: 14, fontWeight: 700,
+                  border: 'none', cursor: 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>open_in_new</span>
+                Ir al Catalogo
               </button>
             </div>
           </>
