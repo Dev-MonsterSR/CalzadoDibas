@@ -379,33 +379,94 @@ export default function SellerDashboard() {
                 </div>
               )}
 
-              {pickupOrders.map(order => (
-                <div key={order.id} className="bg-surface-container rounded-xl border border-outline-variant/30 p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-title-md text-title-md text-on-surface">Orden #{order.id}</h3>
-                      <p className="text-on-surface-variant">{order.customer_name || 'Cliente'}</p>
-                      <p className="text-xs text-on-surface-variant mt-1">{order.customer_phone || ''}</p>
+              {pickupOrders.map(order => {
+                const statusConfig = {
+                  'pagado': { label: 'PAGADO', color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: 'credit_card' },
+                  'preparando': { label: 'PREPARANDO', color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: 'inventory_2' },
+                  'listo_recojo': { label: 'LISTO RECOJO', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: 'check_circle' },
+                  'entregado': { label: 'ENTREGADO', color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: 'task_alt' },
+                }[order.status] || { label: order.status, color: '#6b7280', bg: 'rgba(107,114,128,0.15)', icon: 'pending' };
+                return (
+                <div key={order.id} style={{
+                  background: 'rgba(24, 24, 27, 0.7)',
+                  backdropFilter: 'blur(12px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 12,
+                  padding: 20,
+                  marginBottom: 16,
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div style={{
+                        width: 48, height: 48, borderRadius: 12,
+                        background: statusConfig.bg,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 24, color: statusConfig.color }}>
+                          {statusConfig.icon}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 style={{ color: 'var(--primary-container)', fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
+                          Orden #{order.id}
+                        </h3>
+                        <p style={{ color: '#fff', fontSize: 14, fontWeight: 500 }}>
+                          {order.customer_name || 'Cliente'}
+                        </p>
+                        <p style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 2 }}>
+                          {order.customer_phone || 'Sin telefono'}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="px-3 py-1 bg-yellow-500/10 text-yellow-500 text-xs font-bold rounded">LISTO RECOJO</span>
-                      <p className="text-primary font-bold mt-2">S/ {parseFloat(order.total).toFixed(2)}</p>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '4px 10px', borderRadius: 999,
+                        fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
+                        color: statusConfig.color, background: statusConfig.bg,
+                        border: `1px solid ${statusConfig.color}40`,
+                      }}>
+                        {statusConfig.label}
+                      </span>
+                      <p style={{ color: 'var(--primary-container)', fontSize: 18, fontWeight: 700, marginTop: 8, fontFamily: 'monospace' }}>
+                        S/ {parseFloat(order.total).toFixed(2)}
+                      </p>
                     </div>
                   </div>
-                  <div className="border-t border-outline-variant/20 pt-4 mb-4">
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 12, marginBottom: 16 }}>
                     {order.items?.map(item => (
-                      <div key={item.id} className="flex justify-between py-1 text-sm">
-                        <span className="text-on-surface-variant">{item.product_name} ×{item.quantity}</span>
-                        <span className="text-on-surface">S/ {(item.price_at_purchase * item.quantity).toFixed(2)}</span>
+                      <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', fontSize: 13 }}>
+                        <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 16, opacity: 0.5 }}>checkroom</span>
+                          {item.product_name} <span style={{ color: 'var(--text-muted)' }}>×{item.quantity}</span>
+                        </span>
+                        <span style={{ color: '#fff', fontWeight: 500, fontFamily: 'monospace' }}>
+                          S/ {(item.price_at_purchase * item.quantity).toFixed(2)}
+                        </span>
                       </div>
                     ))}
                   </div>
-                  <button onClick={() => handleVerifyQR(order.id)} className="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-label-md hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2">
-                    <span className="material-symbols-outlined">qr_code_scanner</span>
+                  <button
+                    onClick={() => handleVerifyQR(order.id)}
+                    disabled={verifying}
+                    className="w-full flex items-center justify-center gap-2 transition-all hover:brightness-110 active:scale-95"
+                    style={{
+                      background: 'var(--primary-container)', color: '#000',
+                      padding: '12px 16px', borderRadius: 8,
+                      fontSize: 14, fontWeight: 700, letterSpacing: '0.02em',
+                      border: 'none', cursor: verifying ? 'not-allowed' : 'pointer',
+                      opacity: verifying ? 0.6 : 1,
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 20 }}>qr_code_scanner</span>
                     VERIFICAR QR Y ENTREGAR
                   </button>
                 </div>
-              ))}
+                );
+              })}
 
               {deliveredToday.map(order => (
                 <div key={order.id} className="bg-surface-container rounded-xl border border-outline-variant/30 p-6 opacity-75">
