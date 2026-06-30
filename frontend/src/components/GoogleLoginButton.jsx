@@ -51,37 +51,30 @@ export default function GoogleLoginButton({ text = 'Continuar con Google' }) {
     }
   };
 
-  // Renderiza el boton oficial de Google cuando el SDK carga
+  // Un solo useEffect que:
+  // 1) Espera a que el SDK de Google cargue (window.google)
+  // 2) Llama a initialize() UNA SOLA VEZ
+  // 3) Renderiza el boton oficial
+  // El array de dependencias vacio [] garantiza que solo se ejecute al montar.
   useEffect(() => {
-    const initGoogle = () => {
-      if (window.google && buttonRef.current) {
-        window.google.accounts.id.renderButton(buttonRef.current, {
-          type: 'standard',
-          theme: 'outline',
-          size: 'large',
-          text: 'continue_with',
-          shape: 'rectangular',
-          logo_alignment: 'left',
-          width: 360,
-        });
+    let initialized = false;
+    let cleaned = false;
+
+    // Decodifica el JWT de Google (sin verificar firma - solo para extraer info)
+    const parseJwt = (token) => {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+          atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+        );
+        return JSON.parse(jsonPayload);
+      } catch {
+        return null;
       }
     };
 
-    if (window.google) {
-      initGoogle();
-    } else {
-      const interval = setInterval(() => {
-        if (window.google) {
-          clearInterval(interval);
-          initGoogle();
-        }
-      }, 100);
-      setTimeout(() => clearInterval(interval), 10000);
-    }
-  }, []);
-
-  // Manejar el response cuando el usuario se autentica
-  useEffect(() => {
+    // Maneja el callback de Google con el JWT del usuario
     const handleCredentialResponse = async (response) => {
       setError('');
       setLoading(true);
@@ -95,17 +88,14 @@ export default function GoogleLoginButton({ text = 'Continuar con Google' }) {
           throw new Error('Faltan datos de Google');
         }
 
-        // Intentar login/registro
         const res = await authService.loginGoogle({ google_id, email, name });
 
-        // Caso 1: el backend pide completar el perfil (falta telefono)
         if (res.data.requires_phone) {
           setPendingData(res.data);
           setLoading(false);
-          return;  // Mostrar modal
+          return;
         }
 
-        // Caso 2: login exitoso directo
         login(res.data.token, res.data.user);
         navigateAfterLogin(res.data.user);
       } catch (err) {
@@ -115,13 +105,49 @@ export default function GoogleLoginButton({ text = 'Continuar con Google' }) {
       }
     };
 
-    if (window.google) {
+    const tryInit = () => {
+      if (!window.google || initialized || cleaned) return;
+      initialized = true;
+
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleCredentialResponse,
       });
+
+      if (buttonRef.current) {
+        window.google.accounts.id.renderButton(buttonRef.current, {
+          type: 'standard',
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'rectangular',
+          logo_alignment: 'left',
+          width: 360,
+        });
+      }
+    };
+
+    if (window.google) {
+      tryInit();
+    } else {
+      const interval = setInterval(() => {
+        if (window.google && !initialized && !cleaned) {
+          clearInterval(interval);
+          tryInit();
+        }
+      }, 200);
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        cleaned = true;
+      }, 15000);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+        cleaned = true;
+      };
     }
-  }, [login, navigate]);
+  }, []);
 
   // Manejar el submit del modal de completar perfil
   const handleCompleteSubmit = async (e) => {
