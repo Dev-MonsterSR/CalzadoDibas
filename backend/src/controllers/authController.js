@@ -108,6 +108,7 @@ export async function loginGoogle(req, res, next) {
 
     // Check if user exists
     let user = await User.findByEmail(email);
+    let isNewUser = false;
 
     if (!user) {
       // Create new user from Google
@@ -119,9 +120,23 @@ export async function loginGoogle(req, res, next) {
         google_id
       });
       user = await User.findById(userId);
+      isNewUser = true;
     } else if (!user.google_id) {
       // Link Google account
       await User.update(user.id, { google_id });
+      user = await User.findById(user.id);
+    }
+
+    // Si el usuario no tiene telefono (cosa importante para entregas), pedirlo.
+    // El frontend abrira un modal y llamara a completeGoogleProfile.
+    if (!user.phone) {
+      return res.json({
+        requires_phone: true,
+        is_new_user: isNewUser,
+        google_id,
+        email,
+        name: user.name,
+      });
     }
 
     const token = generateToken(user);
@@ -130,6 +145,37 @@ export async function loginGoogle(req, res, next) {
       message: 'Login con Google exitoso',
       token,
       user: sanitizeUser(user)
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Completa el perfil de un usuario autenticado por Google (solo el telefono es obligatorio)
+export async function completeGoogleProfile(req, res, next) {
+  try {
+    const { google_id, phone, address } = req.body;
+
+    if (!google_id) {
+      return res.status(400).json({ message: 'Falta google_id.' });
+    }
+    if (!phone || !/^9\d{8}$/.test(phone)) {
+      return res.status(400).json({ message: 'Telefono invalido. Debe empezar con 9 y tener 9 digitos.' });
+    }
+
+    const user = await User.findByGoogleId(google_id);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado. Inicia sesion con Google primero.' });
+    }
+
+    await User.update(user.id, { phone, address: address || user.address });
+    const updated = await User.findById(user.id);
+    const token = generateToken(updated);
+
+    res.json({
+      message: 'Perfil completado',
+      token,
+      user: sanitizeUser(updated)
     });
   } catch (err) {
     next(err);

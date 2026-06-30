@@ -45,6 +45,10 @@ router.post('/login', [
 // POST /api/auth/google
 router.post('/google', authController.loginGoogle);
 
+// POST /api/auth/google/complete
+// Completa el perfil despues de login con Google (solo el telefono es obligatorio)
+router.post('/google/complete', authController.completeGoogleProfile);
+
 // GET /api/auth/profile (requires auth)
 router.get('/profile', verifyToken, authController.getProfile);
 

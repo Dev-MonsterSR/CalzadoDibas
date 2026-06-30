@@ -4,6 +4,7 @@ export const authService = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
   loginGoogle: (data) => api.post('/auth/google', data),
+  completeGoogleProfile: (data) => api.post('/auth/google/complete', data),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (data) => api.put('/auth/profile', data),
 };
