@@ -243,7 +243,7 @@ export default function AdminDashboard() {
     { value: '1m', label: '1 mes' },
     { value: '3m', label: '3 meses' },
     { value: '6m', label: '6 meses' },
-    { value: '1y', label: '1 ano' },
+    { value: '1y', label: '1 año' },
   ];
 
   // Calcular datos segun el rango
